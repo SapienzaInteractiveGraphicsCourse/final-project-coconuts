@@ -13,6 +13,7 @@ var renderer;
 var config = {
   game: {
     velocity: 100,
+    difficulty: 3,
     yspawn: 0,
     zspawn: 0,
     x_lane_0: -7.3,
@@ -59,6 +60,12 @@ function degtorad(degrees)
   return degrees * (pi/180);
 }
 
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function initFerrari(){
   ferrari.mesh = new THREE.Object3D();
   ferrari.mesh.name = "Ferrari";
@@ -82,21 +89,28 @@ function initRoad(){
   const material = new THREE.MeshBasicMaterial({
     map: texture,
   });
-  let cube = new THREE.Mesh( geometry, material );
-  cube.position.set(0, config.game.yspawn - 0.5 , -7400);
-  cube.rotation.set(0,Math.PI/2,0);
-  cube.scale.set(15000,1,20);
-  cube.receiveShadow = true;
-  scene.add( cube );
+  road.mesh = new THREE.Mesh( geometry, material );
+  road.mesh.position.set(0, config.game.yspawn - 0.5 , 0);
+  road.mesh.rotation.set(0,Math.PI/2,0);
+  road.mesh.scale.set(15000,1,20);
+  road.mesh.receiveShadow = true;
+  scene.add( road.mesh );
 }
 
-function spawnTruck(){
+function spawnTruck(corsia){
+  for (var j in vehicles.length){
+    console.log("Sjocajnfowajmwf");
+  }
+  console.log("[++] : " + (((ferrari.mesh.position.z)) -80));
   var truck = new THREE.Object3D();
   truck.name = "Truck";
   let body = models.truck.gltf.clone();
   truck.add(body);
   truck.rotation.y = -Math.PI;
-  truck.position.set(7.3, 0, -40);
+  if (corsia == 0) truck.position.set(config.game.x_lane_0, 0, -vehicles.position.z - 150);
+  else if (corsia == 1) truck.position.set(config.game.x_lane_1,  0,-vehicles.position.z - 150);
+  else if (corsia == 2) truck.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - 150);
+  else if (corsia == 3) truck.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - 150);
   truck.scale.set(0.04,0.04,0.04);
 
   //scene.add(truck);
@@ -207,7 +221,6 @@ function init(){
   initFerrari();
   initvehicles();
   initRoad();
-  spawnTruck();
   initListenerKeyboard();
     
   const animate = function() {
@@ -221,6 +234,7 @@ function init(){
 }
 
 function start(){
+  spawnTruck(3);
   moveVehicles();
   moveFerrari();
 }
@@ -326,8 +340,9 @@ function performMovementTo( pos){
   }
 }
 
+var frame_ref = 0;
 function moveFerrari(){
-  console.log(ferrari.mesh.position.z);
+  console.log(frames);
 	if (config.utils.isPlaying){
     var delta = { z: 0 };
     objectsTween = new TWEEN.Tween(delta)
@@ -335,11 +350,15 @@ function moveFerrari(){
     .easing(TWEEN.Easing.Linear.None)
     .onUpdate( 
           () => {
-            ferrari.mesh.position.z = ferrari.mesh.position.z - delta.z;
-            camera.position.z = camera.position.z - delta.z;
+            road.mesh.position.z = road.mesh.position.z + delta.z;
           }
     ).onComplete(
           () => {
+            if (frames-frame_ref > 120){
+              frame_ref = frames;
+              console.log("UPDATE FRAME_REF:  " + frame_ref);
+              spawnVehicles();
+            }
             moveFerrari();
           }
     ).start();
@@ -351,7 +370,7 @@ function moveVehicles(){
 	if (config.utils.isPlaying){
     var delta = { z: 0 };
     objectsTween = new TWEEN.Tween(delta)
-    .to({ z: 0.1 },config.game.velocity) 
+    .to({ z: 0.5 },config.game.velocity) 
     .easing(TWEEN.Easing.Linear.None)
     .onUpdate( 
           () => {
@@ -362,5 +381,33 @@ function moveVehicles(){
             moveVehicles();
           }
     ).start();
+  }
+}
+
+function spawnVehicles(){
+  var max = 3;
+  var min = 0;
+  let spawnAtPosition = [];
+  for (let i = 0; i < 4; i ++) spawnAtPosition.push(false);
+  for(var i = 0; i < 4; i++){
+    var p = Math.random();
+    if (config.game.difficulty == 1 && p > 0.8){
+      spawnAtPosition[i] = true;
+    }
+    else if (config.game.difficulty == 2 && p > 0.6){
+      spawnAtPosition[i] = true;
+    }
+    else if (config.game.difficulty == 3 && p > 0.2){
+      spawnAtPosition[i] = true;
+    }
+  }
+  if (!spawnAtPosition.includes(false)){
+    console.log("PIENONE ZIOCANE");
+    var p = getRandomInt(0,3);
+    console.log("P: " + p);
+    spawnAtPosition[p] = false;
+  }
+  for(let i = 0; i < spawnAtPosition.length; i ++){
+    if (spawnAtPosition[i]) spawnTruck(i);
   }
 }
