@@ -7,9 +7,12 @@ var scene;
 var frames = 0;
 var objectsTween;
 var vehicles;
+var camera;
+var renderer;
 
 var config = {
   game: {
+    velocity: 100,
     yspawn: 0,
     zspawn: 0,
     x_lane_0: -7.3,
@@ -17,7 +20,15 @@ var config = {
     x_lane_2: 2.4,
     x_lane_3: 7.3,
     z_lane: -40,
+  },
+  colors: {
+    sky: 'white',
+  },
+  utils: {
+    showFog: true,
+    isPlaying: false,
   }
+  
 }
 
 //Declaring the car
@@ -26,6 +37,10 @@ var ferrari = {
   positions :{
     left: -1,
     right: 1,
+  },
+  rotations :{
+    right: Math.PI - degtorad(15),
+    left: Math.PI + degtorad(15),
   }
 }
 var road = {
@@ -38,7 +53,11 @@ const models = {
   truck: {url: "./assets/cars/truck/scene.gltf"},
 }
 
-
+function degtorad(degrees)
+{
+  var pi = Math.PI;
+  return degrees * (pi/180);
+}
 
 function initFerrari(){
   ferrari.mesh = new THREE.Object3D();
@@ -54,13 +73,19 @@ function initFerrari(){
 function initRoad(){
   const texLoader = new THREE.TextureLoader();
   const geometry = new THREE.BoxGeometry(1,1,1);
+
+  var texture = texLoader.load("./assets/environment/road_texture.jpg");
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set( 200, 1 );
+
   const material = new THREE.MeshBasicMaterial({
-    map: texLoader.load("./assets/environment/road_texture.jpg"),
+    map: texture,
   });
   let cube = new THREE.Mesh( geometry, material );
-  cube.position.set(0, config.game.yspawn - 0.5 , 0);
+  cube.position.set(0, config.game.yspawn - 0.5 , -7400);
   cube.rotation.set(0,Math.PI/2,0);
-  cube.scale.set(150,1,20);
+  cube.scale.set(15000,1,20);
   cube.receiveShadow = true;
   scene.add( cube );
 }
@@ -130,17 +155,21 @@ function loadModels(){
 function init(){
   //Set up of the camera
   console.log("sono in init");
-  const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500 );
+  camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 250 );
   camera.position.set(0, 10, 100);
   camera.position.z = 30; //Set to 400 because the text was so big
   camera.lookAt(0, 0, 0);
 
   //Set up of the scene
   scene = new THREE.Scene();
+  scene.background = new THREE.Color( config.colors.sky );
+
+	// FOG
+	if(config.utils.showFog) scene.fog = new THREE.Fog( config.colors.sky, 5, 200 );
 
 
   //Set up of the renderer
-  const renderer = new THREE.WebGLRenderer();
+  renderer = new THREE.WebGLRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -164,7 +193,7 @@ function init(){
   directionalLight.target = directionalLightTargetObject;
   directionalLight.castShadow = true;
 
-  directionalLight.shadow.camera.left = -100;
+  directionalLight.shadow.camera.left = -10;
 	directionalLight.shadow.camera.right = 10;
 	directionalLight.shadow.camera.top = 140;
 	directionalLight.shadow.camera.bottom = 0;
@@ -175,13 +204,12 @@ function init(){
   scene.add(directionalLight);
 
 
-  
   initFerrari();
-  initRoad();
   initvehicles();
+  initRoad();
   spawnTruck();
   initListenerKeyboard();
-  moveVehicles();
+    
   const animate = function() {
     requestAnimationFrame( animate );
     frames += 1;
@@ -192,19 +220,37 @@ function init(){
 
 }
 
-// SETTING THE LISTENER FOR THE ANIMATIONS
+function start(){
+  moveVehicles();
+  moveFerrari();
+}
 
+// SETTING THE LISTENER FOR THE ANIMATIONS
+var keyPressed = false;
 function initListenerKeyboard(){
   document.onkeydown = function(e){
+    keyPressed = true;
     switch(e.code){
       case 'KeyA':
       case 'ArrowLeft':
         moveLeft();
+        performRotationTo(ferrari.rotations.left);
         break;
       case 'KeyD':
       case 'ArrowRight':
         moveRight();
+        performRotationTo(ferrari.rotations.right);
+        break;
+      case 'Enter':
+        config.utils.isPlaying = true;
+        start();
+        break;
+      case 'KeyP':
+        config.utils.isPlaying = false;
     }
+  }
+  document.onkeyup = function(e){
+    keyPressed = false;
   }
 }
 
@@ -217,51 +263,104 @@ function moveRight(){
   performMovementTo(ferrari.positions.right);
 }
 
+function align(){
+  if (config.utils.isPlaying){
+    if ( ferrari.mesh.rotation.y != Math.PI){
+      var rotation = { y: ferrari.mesh.rotation.y }; 
+      var tween = new TWEEN.Tween(rotation)
+        .to({ y: Math.PI }, config.game.velocity)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate( 
+              () => {
+                ferrari.mesh.rotation.y = rotation.y;
+              }
+        );
+    
+      tween.start();
+      } 
+  }
+}
+
+function performRotationTo( rad){
+  if (config.utils.isPlaying){
+    var rotation = { y: ferrari.mesh.rotation.y }; // Start at (0, 0)
+    var tween = new TWEEN.Tween(rotation)
+      .to({ y: rad }, config.game.velocity)
+      .easing(TWEEN.Easing.Quadratic.Out)
+      .onUpdate( 
+            () => {
+              ferrari.mesh.rotation.y = rotation.y;
+            }
+      );
+
+    tween.start();
+  }
+}
+
 function performMovementTo( pos){
-  var delta = { x: 0 };
-	if (pos < 0){
+  if (config.utils.isPlaying){
+    var delta = { x: 0 };
+    if (pos < 0){
+      objectsTween = new TWEEN.Tween(delta)
+    .to({ x: -0.1 },config.game.velocity) 
+    .easing(TWEEN.Easing.Linear.None)
+    .onUpdate( 
+          () => {
+            ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
+          }
+    ).onComplete(() =>{
+      if (!keyPressed) align();
+    }).start();
+    }else{
+      objectsTween = new TWEEN.Tween(delta)
+    .to({ x: 0.1 },config.game.velocity) 
+    .easing(TWEEN.Easing.Linear.None)
+    .onUpdate( 
+          () => {
+            ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
+          }
+    ).onComplete(() =>{
+      if (!keyPressed) align();
+    }).start();
+    }
+  }
+}
+
+function moveFerrari(){
+  console.log(ferrari.mesh.position.z);
+	if (config.utils.isPlaying){
+    var delta = { z: 0 };
     objectsTween = new TWEEN.Tween(delta)
-	.to({ x: -0.1 },10) 
-	.easing(TWEEN.Easing.Linear.None)
-	.onUpdate( 
-				() => {
-					ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
-				}
-	).onComplete(
-				() => {
-					moveVehicles();
-				}
-	).start();
-  }else{
-    objectsTween = new TWEEN.Tween(delta)
-	.to({ x: 0.1 },10) 
-	.easing(TWEEN.Easing.Linear.None)
-	.onUpdate( 
-				() => {
-					ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
-				}
-	).onComplete(
-				() => {
-					moveVehicles();
-				}
-	).start();
+    .to({ z: 0.3 },config.game.velocity) 
+    .easing(TWEEN.Easing.Linear.None)
+    .onUpdate( 
+          () => {
+            ferrari.mesh.position.z = ferrari.mesh.position.z - delta.z;
+            camera.position.z = camera.position.z - delta.z;
+          }
+    ).onComplete(
+          () => {
+            moveFerrari();
+          }
+    ).start();
   }
 }
 
 function moveVehicles(){
   
-	// init tween
-	var delta = { z: 0 };
-	objectsTween = new TWEEN.Tween(delta)
-	.to({ z: 0.1 },1) 
-	.easing(TWEEN.Easing.Linear.None)
-	.onUpdate( 
-				() => {
-					vehicles.position.z = vehicles.position.z + delta.z;
-				}
-	).onComplete(
-				() => {
-					moveVehicles();
-				}
-	).start();
+	if (config.utils.isPlaying){
+    var delta = { z: 0 };
+    objectsTween = new TWEEN.Tween(delta)
+    .to({ z: 0.1 },config.game.velocity) 
+    .easing(TWEEN.Easing.Linear.None)
+    .onUpdate( 
+          () => {
+            vehicles.position.z = vehicles.position.z + delta.z;
+          }
+    ).onComplete(
+          () => {
+            moveVehicles();
+          }
+    ).start();
+  }
 }
