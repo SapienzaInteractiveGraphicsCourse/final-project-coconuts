@@ -256,11 +256,9 @@ function initListenerKeyboard(){
         performRotationTo(ferrari.rotations.right);
         break;
       case 'Enter':
-        config.utils.isPlaying = true;
-        start();
+        config.utils.isPlaying = !config.utils.isPlaying;
+        if(config.utils.isPlaying) start();
         break;
-      case 'KeyP':
-        config.utils.isPlaying = false;
     }
   }
   document.onkeyup = function(e){
