@@ -28,6 +28,7 @@ var config = {
   utils: {
     showFog: true,
     isPlaying: false,
+    hitbox_visible: true,
   }
   
 }
@@ -47,6 +48,13 @@ var ferrari = {
 var road = {
   mesh: new THREE.Object3D()
 }
+
+const hitBox = new THREE.BoxGeometry(1, 1, 1);
+const hitBox_material = new THREE.MeshStandardMaterial({
+  color: 0xffffff,
+  transparent: true,
+  opacity: .2,
+});
 
 const models = {
   ferrari: {url: "./assets/cars/ferrari/scene.gltf"},
@@ -73,7 +81,15 @@ function initFerrari(){
   ferrari.mesh.position.set(0,config.game.yspawn,0);
   ferrari.mesh.rotation.set(0,Math.PI,0);
   let body = models.ferrari.gltf.getObjectByName('RootNode');
+
+  var ferrari_hitbox = new THREE.Mesh(hitBox, hitBox_material);
+  ferrari_hitbox.name = "ferrari_hitbox";
+  ferrari_hitbox.scale.set(2.5, 2, 7);
+  ferrari_hitbox.position.set(0, 0, 0.3);
+  ferrari_hitbox.visible = config.utils.hitbox_visible;
+
   ferrari.mesh.add(body);
+  ferrari.mesh.add(ferrari_hitbox);
   scene.add(ferrari.mesh);
 }
 
@@ -105,13 +121,18 @@ function spawnTruck(corsia){
   var truck = new THREE.Object3D();
   truck.name = "Truck";
   let body = models.truck.gltf.clone();
+  let hitbox_truck = createHitBox("truck");
+  
   truck.add(body);
+  truck.add(hitbox_truck);
+
   truck.rotation.y = -Math.PI;
   if (corsia == 0) truck.position.set(config.game.x_lane_0, 0, -vehicles.position.z - 150);
   else if (corsia == 1) truck.position.set(config.game.x_lane_1,  0,-vehicles.position.z - 150);
   else if (corsia == 2) truck.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - 150);
   else if (corsia == 3) truck.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - 150);
   truck.scale.set(0.04,0.04,0.04);
+  
 
   //scene.add(truck);
   vehicles.add(truck);
@@ -218,6 +239,8 @@ function init(){
   scene.add(directionalLight);
 
 
+  document.getElementById("main_menu").hidden = false;
+
   initFerrari();
   initvehicles();
   initRoad();
@@ -234,6 +257,8 @@ function init(){
 }
 
 function start(){
+
+  document.getElementById("main_menu").hidden = true;
   spawnTruck(3);
   moveVehicles();
   moveFerrari();
@@ -380,6 +405,23 @@ function moveVehicles(){
           }
     ).start();
   }
+}
+
+function createHitBox(codice_veicolo){
+  let hitbox = new THREE.Mesh(hitBox, hitBox_material);
+  switch(codice_veicolo){
+    case 'truck':
+      hitbox.scale.set(83, 70, 205);
+      hitbox.position.set(0,35, -6);
+      hitbox.name = "hitbox_truck"
+      hitbox.visible = config.utils.hitbox_visible;
+      return hitbox;
+      break;
+  }
+
+  
+
+
 }
 
 function spawnVehicles(){
