@@ -159,7 +159,7 @@ function spawn500(corsia){
   vehicles.add(fiat_500);
 }
 
-function spawnmercedes(corsia){
+function spawnMercedes(corsia){
   var mercedes = new THREE.Object3D();
   mercedes.name = "mercedes";
   let body = models.mercedes.gltf.clone();
@@ -179,7 +179,7 @@ function spawnmercedes(corsia){
 
 }
 
-function spawnbmw(corsia){
+function spawnBmw(corsia){
   var bmw = new THREE.Object3D();
   bmw.name = "bmw";
   let body = models.bmw.gltf.clone();
@@ -562,8 +562,8 @@ function spawnVehicles(){
   }
   for(let i = 0; i < spawnAtPosition.length; i ++){
     if (spawnAtPosition[i]) {
-      //var cod = getRandomInt(1, num_vehicles);
-      var cod = 1;
+      var cod = getRandomInt(1, num_vehicles);
+      // var cod = 1;
       switch(cod){
         case 1:
           spawnTruck(i);
@@ -572,10 +572,10 @@ function spawnVehicles(){
           spawn500(i);
           break;
         case 3:
-          spawnmercedes(i);
+          spawnMercedes(i);
           break;
         case 4:
-          spawnbmw(i);
+          spawnBmw(i);
           break;
       }
     }
