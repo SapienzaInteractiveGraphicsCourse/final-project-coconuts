@@ -114,9 +114,7 @@ function initRoad(){
 }
 
 function spawnTruck(corsia){
-  for (var j in vehicles.length){
-    console.log("Sjocajnfowajmwf");
-  }
+
   console.log("[++] : " + (((ferrari.mesh.position.z)) -80));
   var truck = new THREE.Object3D();
   truck.name = "Truck";
@@ -137,6 +135,26 @@ function spawnTruck(corsia){
   //scene.add(truck);
   vehicles.add(truck);
 }
+
+function provaspawnVec(){
+  var truck = new THREE.Object3D();
+  truck.name = "Truck";
+  let body = models.truck.gltf.clone();
+  let hitbox_truck = createHitBox("truck");
+  
+  truck.add(body);
+  truck.add(hitbox_truck);
+
+  truck.rotation.y = -Math.PI;
+  truck.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - 5);
+  truck.scale.set(0.04,0.04,0.04);
+  
+
+  //scene.add(truck);
+  vehicles.add(truck);
+}
+
+
 
 function initvehicles(){
   vehicles = new THREE.Group();
@@ -259,9 +277,9 @@ function init(){
 function start(){
 
   document.getElementById("main_menu").hidden = true;
-  spawnTruck(3);
-  moveVehicles();
-  moveFerrari();
+  provaspawnVec();
+  //moveVehicles();
+  //moveFerrari();
 }
 
 // SETTING THE LISTENER FOR THE ANIMATIONS
