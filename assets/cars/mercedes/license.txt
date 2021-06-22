@@ -1,0 +1,11 @@
+Model Information:
+* title:	Mercedes C63 Coupe
+* source:	https://sketchfab.com/3d-models/mercedes-c63-coupe-03fa574a59ff45e4b1edb1662dc04bf9
+* author:	ishaknapitupulucxr2 (https://sketchfab.com/ishaknapitupulucxr2)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Mercedes C63 Coupe" (https://sketchfab.com/3d-models/mercedes-c63-coupe-03fa574a59ff45e4b1edb1662dc04bf9) by ishaknapitupulucxr2 (https://sketchfab.com/ishaknapitupulucxr2) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

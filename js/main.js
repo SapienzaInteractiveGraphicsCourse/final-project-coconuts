@@ -20,7 +20,8 @@ var config = {
     x_lane_1: -2.4,
     x_lane_2: 2.4,
     x_lane_3: 7.3,
-    z_lane: -40,
+    z_lane: 150,
+    z_remove: 25,
   },
   colors: {
     sky: 'white',
@@ -28,7 +29,7 @@ var config = {
   utils: {
     showFog: true,
     isPlaying: false,
-    hitbox_visible: true,
+    hitbox_visible: false,
   }
   
 }
@@ -56,10 +57,14 @@ const hitBox_material = new THREE.MeshStandardMaterial({
   opacity: .2,
 });
 
+const num_vehicles = 6; 
 const models = {
   ferrari: {url: "./assets/cars/ferrari/scene.gltf"},
   road: {url: "./assets/environment/road/scene.gltf"},
   truck: {url: "./assets/cars/truck/scene.gltf"},
+  fiat_500: {url: "./assets/cars/fiat_500/scene.gltf"},
+  mercedes: {url: "./assets/cars/mercedes/scene.gltf"},
+  bmw: {url: "./assets/cars/bmw/scene.gltf"},
 }
 
 function degtorad(degrees)
@@ -125,29 +130,86 @@ function spawnTruck(corsia){
   truck.add(hitbox_truck);
 
   truck.rotation.y = -Math.PI;
-  if (corsia == 0) truck.position.set(config.game.x_lane_0, 0, -vehicles.position.z - 150);
-  else if (corsia == 1) truck.position.set(config.game.x_lane_1,  0,-vehicles.position.z - 150);
-  else if (corsia == 2) truck.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - 150);
-  else if (corsia == 3) truck.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - 150);
+  if (corsia == 0) truck.position.set(config.game.x_lane_0, 0, -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 1) truck.position.set(config.game.x_lane_1,  0,-vehicles.position.z - config.game.z_lane);
+  else if (corsia == 2) truck.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 3) truck.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - config.game.z_lane);
   truck.scale.set(0.04,0.04,0.04);
   
 
-  //scene.add(truck);
   vehicles.add(truck);
+}
+
+function spawn500(corsia){
+  var fiat_500 = new THREE.Object3D();
+  fiat_500.name = "Fiat_500";
+  let body = models.fiat_500.gltf.clone();
+  let hitbox_fiat_500 = createHitBox("fiat_500");
+  
+  fiat_500.add(body);
+  fiat_500.add(hitbox_fiat_500);
+
+  fiat_500.rotation.y = -Math.PI;
+  if (corsia == 0) fiat_500.position.set(config.game.x_lane_0, 1.2,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 1) fiat_500.position.set(config.game.x_lane_1,  1.2,-vehicles.position.z - config.game.z_lane);
+  else if (corsia == 2) fiat_500.position.set(config.game.x_lane_2, 1.2,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 3) fiat_500.position.set(config.game.x_lane_3, 1.2,  -vehicles.position.z - config.game.z_lane);
+  fiat_500.scale.set(2.7,2.7,2.7);
+  
+  vehicles.add(fiat_500);
+}
+
+function spawnmercedes(corsia){
+  var mercedes = new THREE.Object3D();
+  mercedes.name = "mercedes";
+  let body = models.mercedes.gltf.clone();
+  let hitbox_mercedes = createHitBox("mercedes");
+  
+  mercedes.add(body);
+  mercedes.add(hitbox_mercedes);
+
+  mercedes.rotation.y = -Math.PI;
+  if (corsia == 0) mercedes.position.set(config.game.x_lane_0, 0,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 1) mercedes.position.set(config.game.x_lane_1,  0,-vehicles.position.z - config.game.z_lane);
+  else if (corsia == 2) mercedes.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 3) mercedes.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - config.game.z_lane);
+  mercedes.scale.set(0.016,0.016,0.016);
+  
+  vehicles.add(mercedes);
+
+}
+
+function spawnbmw(corsia){
+  var bmw = new THREE.Object3D();
+  bmw.name = "bmw";
+  let body = models.bmw.gltf.clone();
+  let hitbox_bmw = createHitBox("bmw");
+  
+  bmw.add(body);
+  bmw.add(hitbox_bmw);
+
+  if (corsia == 0) bmw.position.set(config.game.x_lane_0-1.5, 1.6,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 1) bmw.position.set(config.game.x_lane_1-1.5,  1.6,-vehicles.position.z - config.game.z_lane);
+  else if (corsia == 2) bmw.position.set(config.game.x_lane_2-1.5, 1.6,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 3) bmw.position.set(config.game.x_lane_3-1.5, 1.6,  -vehicles.position.z - config.game.z_lane);
+  bmw.scale.set(1.5, 1.5, 1.5);
+  
+  vehicles.add(bmw);
+
 }
 
 function provaspawnVec(){
   var truck = new THREE.Object3D();
-  truck.name = "Truck";
-  let body = models.truck.gltf.clone();
-  let hitbox_truck = createHitBox("truck");
+  truck.name = "mercedes";
+  let body = models.mercedes.gltf.clone();
+  let hitbox_truck = createHitBox("bmw");
   
   truck.add(body);
   truck.add(hitbox_truck);
 
-  truck.rotation.y = -Math.PI;
-  truck.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - 5);
-  truck.scale.set(0.04,0.04,0.04);
+
+  truck.position.set(config.game.x_lane_2 - 1.5,0,   -vehicles.position.z - 5);
+  truck.scale.set(0.016,0.016,0.016);
   
 
   //scene.add(truck);
@@ -208,7 +270,7 @@ function loadModels(){
 function init(){
   //Set up of the camera
   console.log("sono in init");
-  camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 250 );
+  camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 200 );
   camera.position.set(0, 10, 100);
   camera.position.z = 30; //Set to 400 because the text was so big
   camera.lookAt(0, 0, 0);
@@ -263,6 +325,7 @@ function init(){
   initvehicles();
   initRoad();
   initListenerKeyboard();
+  //provaspawnVec();
     
   const animate = function() {
     requestAnimationFrame( animate );
@@ -277,9 +340,8 @@ function init(){
 function start(){
 
   document.getElementById("main_menu").hidden = true;
-  provaspawnVec();
-  //moveVehicles();
-  //moveFerrari();
+  moveVehicles();
+  moveFerrari();
 }
 
 // SETTING THE LISTENER FOR THE ANIMATIONS
@@ -406,6 +468,22 @@ function moveFerrari(){
   }
 }
 
+function removeSorpassedVehicles(){
+  let carsToRemove = [];
+
+  vehicles.traverse( function (child) {
+    if ( child.isMesh){
+      let object=child.parent;
+      let objectPos = vehicles.position.z + object.position.z;
+      if (objectPos > config.game.z_remove) carsToRemove.push(object);
+    }
+  });
+
+  carsToRemove.forEach((object)=>{
+    vehicles.remove(object);
+  });
+}
+
 function moveVehicles(){
   
 	if (config.utils.isPlaying){
@@ -416,6 +494,7 @@ function moveVehicles(){
     .onUpdate( 
           () => {
             vehicles.position.z = vehicles.position.z + delta.z;
+            removeSorpassedVehicles();
           }
     ).onComplete(
           () => {
@@ -434,7 +513,24 @@ function createHitBox(codice_veicolo){
       hitbox.name = "hitbox_truck"
       hitbox.visible = config.utils.hitbox_visible;
       return hitbox;
-      break;
+    case 'fiat_500':
+      hitbox.scale.set(0.8, 0.7 ,1.85);
+      hitbox.position.set(0,0,0);
+      hitbox.name = "hitbox_fiat_500"
+      hitbox.visible = config.utils.hitbox_visible;
+      return hitbox;
+    case 'mercedes':
+      hitbox.scale.set(180, 100 ,450);
+      hitbox.position.set(0,50, 0);
+      hitbox.name = "hitbox_mercedes"
+      hitbox.visible = config.utils.hitbox_visible;
+      return hitbox;
+    case 'bmw':
+      hitbox.scale.set(2.1, 1.5 ,5.2);
+      hitbox.position.set(1.1,-0.5, 0.6);
+      hitbox.name = "hitbox_bmw"
+      hitbox.visible = config.utils.hitbox_visible;
+      return hitbox;
   }
 
   
@@ -460,12 +556,28 @@ function spawnVehicles(){
     }
   }
   if (!spawnAtPosition.includes(false)){
-    console.log("PIENONE ZIOCANE");
     var p = getRandomInt(0,3);
     console.log("P: " + p);
     spawnAtPosition[p] = false;
   }
   for(let i = 0; i < spawnAtPosition.length; i ++){
-    if (spawnAtPosition[i]) spawnTruck(i);
+    if (spawnAtPosition[i]) {
+      //var cod = getRandomInt(1, num_vehicles);
+      var cod = 1;
+      switch(cod){
+        case 1:
+          spawnTruck(i);
+          break;
+        case 2:
+          spawn500(i);
+          break;
+        case 3:
+          spawnmercedes(i);
+          break;
+        case 4:
+          spawnbmw(i);
+          break;
+      }
+    }
   }
 }
