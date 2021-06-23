@@ -9,6 +9,7 @@ var objectsTween;
 var vehicles;
 var camera;
 var renderer;
+var collision =[];
 
 var config = {
   game: {
@@ -39,7 +40,9 @@ var ferrari = {
   mesh: new THREE.Object3D(),
   positions :{
     left: -1,
+    ahead: 0,
     right: 1,
+    back: 2,
   },
   rotations :{
     right: Math.PI - degtorad(15),
@@ -67,6 +70,10 @@ const models = {
   bmw: {url: "./assets/cars/bmw/scene.gltf"},
 }
 
+//For Collisions
+var ferrari_hitbox;
+var hitbox_toCheck = [];
+
 function degtorad(degrees)
 {
   var pi = Math.PI;
@@ -87,7 +94,7 @@ function initFerrari(){
   ferrari.mesh.rotation.set(0,Math.PI,0);
   let body = models.ferrari.gltf.getObjectByName('RootNode');
 
-  var ferrari_hitbox = new THREE.Mesh(hitBox, hitBox_material);
+  ferrari_hitbox = new THREE.Mesh(hitBox, hitBox_material);
   ferrari_hitbox.name = "ferrari_hitbox";
   ferrari_hitbox.scale.set(2.5, 2, 7);
   ferrari_hitbox.position.set(0, 0, 0.3);
@@ -120,7 +127,6 @@ function initRoad(){
 
 function spawnTruck(corsia){
 
-  console.log("[++] : " + (((ferrari.mesh.position.z)) -80));
   var truck = new THREE.Object3D();
   truck.name = "Truck";
   let body = models.truck.gltf.clone();
@@ -290,7 +296,6 @@ function init(){
   renderer.shadowMap.type = THREE.PCFShadowMap;
   document.body.appendChild( renderer.domElement );
 
-
   //declaring control variable
   const controls = new OrbitControls(camera, renderer.domElement);
   
@@ -360,6 +365,12 @@ function initListenerKeyboard(){
         moveRight();
         performRotationTo(ferrari.rotations.right);
         break;
+      case 'KeyW':
+        moveAhead();
+        break;
+      case 'KeyS':
+        moveBack();
+        break;
       case 'Enter':
         config.utils.isPlaying = !config.utils.isPlaying;
         if(config.utils.isPlaying) start();
@@ -378,6 +389,16 @@ function moveLeft(){
 function moveRight(){
   if (ferrari.mesh.position.x > config.game.x_lane_3) return;
   performMovementTo(ferrari.positions.right);
+}
+
+function moveAhead(){
+  //if (ferrari.mesh.position.x > config.game.x_lane_3) return; Mettere controllo sulla Z
+  performMovementTo(ferrari.positions.ahead);
+}
+
+function moveBack(){
+  //if (ferrari.mesh.position.x > config.game.x_lane_3) return; Mettere controllo sulla Z
+  performMovementTo(ferrari.positions.back);
 }
 
 function align(){
@@ -417,35 +438,63 @@ function performRotationTo( rad){
 function performMovementTo( pos){
   if (config.utils.isPlaying){
     var delta = { x: 0 };
-    if (pos < 0){
-      objectsTween = new TWEEN.Tween(delta)
-    .to({ x: -0.1 },config.game.velocity) 
-    .easing(TWEEN.Easing.Linear.None)
-    .onUpdate( 
-          () => {
-            ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
-          }
-    ).onComplete(() =>{
-      if (!keyPressed) align();
-    }).start();
-    }else{
-      objectsTween = new TWEEN.Tween(delta)
-    .to({ x: 0.1 },config.game.velocity) 
-    .easing(TWEEN.Easing.Linear.None)
-    .onUpdate( 
-          () => {
-            ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
-          }
-    ).onComplete(() =>{
-      if (!keyPressed) align();
-    }).start();
+    switch (pos) {
+      case -1:
+        objectsTween = new TWEEN.Tween(delta)
+        .to({ x: -0.1 },config.game.velocity) 
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate( 
+              () => {
+                ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
+              }
+        ).onComplete(() =>{
+          if (!keyPressed) align();
+        }).start();
+        break;
+      case 1:
+        objectsTween = new TWEEN.Tween(delta)
+        .to({ x: 0.1 },config.game.velocity) 
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate( 
+              () => {
+                ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
+              }
+        ).onComplete(() =>{
+          if (!keyPressed) align();
+        }).start();
+        break;
+      case 0:
+        objectsTween = new TWEEN.Tween(delta)
+        .to({ x: 0.1 },config.game.velocity) 
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate( 
+              () => {
+                ferrari.mesh.position.z = ferrari.mesh.position.z - delta.x;
+              }
+        ).onComplete(() =>{
+          if (!keyPressed) align();
+        }).start();
+        break;
+      case 2:
+        objectsTween = new TWEEN.Tween(delta)
+        .to({ x: 0.1 },config.game.velocity) 
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate( 
+              () => {
+                ferrari.mesh.position.z = ferrari.mesh.position.z + delta.x;
+              }
+        ).onComplete(() =>{
+          if (!keyPressed) align();
+        }).start();
+        break;
     }
   }
 }
 
 var frame_ref = 0;
 function moveFerrari(){
-  console.log(frames);
+  //console.log(frames);
+  //console.log(ferrari_hitbox.geometry.attributes.position);
 	if (config.utils.isPlaying){
     var delta = { z: 0 };
     objectsTween = new TWEEN.Tween(delta)
@@ -459,7 +508,6 @@ function moveFerrari(){
           () => {
             if (frames-frame_ref > 120){
               frame_ref = frames;
-              console.log("UPDATE FRAME_REF:  " + frame_ref);
               spawnVehicles();
             }
             moveFerrari();
@@ -484,6 +532,135 @@ function removeSorpassedVehicles(){
   });
 }
 
+function calculateCollisionPoints( mesh, scale, type = 'collision' ) { 
+  // Compute the bounding box after scale, translation, etc.
+  var bbox = new THREE.Box3().setFromObject(mesh);
+ 
+  var bounds = {
+    type: type,
+    xMin: bbox.min.x,
+    xMax: bbox.max.x,
+    yMin: bbox.min.y,
+    yMax: bbox.max.y,
+    zMin: bbox.min.z,
+    zMax: bbox.max.z,
+  };
+  
+  collisions.push( bounds );
+}
+
+function detectCollisions() {
+  // Get the user's current collision area.
+  var bounds = {
+    xMin: rotationPoint.position.x - box.geometry.parameters.width / 2,
+    xMax: rotationPoint.position.x + box.geometry.parameters.width / 2,
+    yMin: rotationPoint.position.y - box.geometry.parameters.height / 2,
+    yMax: rotationPoint.position.y + box.geometry.parameters.height / 2,
+    zMin: rotationPoint.position.z - box.geometry.parameters.width / 2,
+    zMax: rotationPoint.position.z + box.geometry.parameters.width / 2,
+  };
+  
+  // Run through each object and detect if there is a collision.
+  for ( var index = 0; index < collisions.length; index ++ ) {
+
+    if (collisions[ index ].type == 'collision' ) {
+      if ( ( bounds.xMin <= collisions[ index ].xMax && bounds.xMax >= collisions[ index ].xMin ) &&
+         ( bounds.yMin <= collisions[ index ].yMax && bounds.yMax >= collisions[ index ].yMin) &&
+         ( bounds.zMin <= collisions[ index ].zMax && bounds.zMax >= collisions[ index ].zMin) ) {
+        // We hit a solid object! Stop all movements.
+        stopMovement();
+
+        // Move the object in the clear. Detect the best direction to move.
+        if ( bounds.xMin <= collisions[ index ].xMax && bounds.xMax >= collisions[ index ].xMin ) {
+          // Determine center then push out accordingly.
+          var objectCenterX = ((collisions[ index ].xMax - collisions[ index ].xMin) / 2) + collisions[ index ].xMin;
+          var playerCenterX = ((bounds.xMax - bounds.xMin) / 2) + bounds.xMin;
+          var objectCenterZ = ((collisions[ index ].zMax - collisions[ index ].zMin) / 2) + collisions[ index ].zMin;
+          var playerCenterZ = ((bounds.zMax - bounds.zMin) / 2) + bounds.zMin;
+
+          // Determine the X axis push.
+          if (objectCenterX > playerCenterX) {
+            rotationPoint.position.x -= 1;
+          } else {
+            rotationPoint.position.x += 1;
+          }
+        }
+        if ( bounds.zMin <= collisions[ index ].zMax && bounds.zMax >= collisions[ index ].zMin ) {
+          // Determine the Z axis push.
+          if (objectCenterZ > playerCenterZ) {
+          rotationPoint.position.z -= 1;
+          } else {
+            rotationPoint.position.z += 1;
+          }
+        }
+      }
+    }
+  }
+}
+
+function detectCollisionWrapper(){
+
+  hitbox_toCheck = [];
+
+  vehicles.traverse( function (child) {
+    if (child.isMesh){
+      let hitBox = child.getObjectByName("hitbox");
+      if (hitBox) hitbox_toCheck.push(hitBox);
+    }
+  });
+
+  hitbox_toCheck.forEach(detectCollision);
+}
+
+function detectCollision(hitbox){
+  let verticesIndices = [1,3,4,6,-1];
+  for (var i = 0; i < verticesIndices.length; i++){
+    let origin = new THREE.Vector3();
+    let direction = new THREE.Vector3(0,0, -1);
+
+    
+    if (verticesIndices[i] == -1){
+      
+      origin = ferrari.mesh.localToWorld(ferrari_hitbox.position.clone());
+      origin.z +=1;
+    }
+    else{
+      
+      let vertexLocalPosition = new THREE.Vector3();
+      var clonato = ferrari_hitbox.geometry.clone();
+      vertexLocalPosition.multiplyVectors( (clonato.attributes.position.array[ verticesIndices[i] ]), ferrari_hitbox.scale );
+      vertexLocalPosition.x += ferrari_hitbox.position.x;
+			vertexLocalPosition.y += ferrari_hitbox.position.y;
+			vertexLocalPosition.z += ferrari_hitbox.position.z;
+
+      origin = ferrari.mesh.localToWorld(vertexLocalPosition);
+    }
+
+    let rcaster = new THREE.Raycaster(origin, direction.normalize());
+
+    var hitResult = rcaster.intersectObject(hitbox);
+		if(hitResult.length > 0) {
+			hitMangaer(hitbox, hitResult[0].distance);
+			break;
+		}
+  }
+}
+
+function hitMangaer(hitBox, hitDistance){
+  let collision_object = hitBox.parent.name;
+  
+  switch (collision_object) {
+    case 'Truck':
+      if (hitDistance <= 4){
+        console.log("Colpito " + collision_object);
+        // OCCORRE FARE FUNZIONE CHE CONTROLLA SE CI SONO ANCORA VITE DISPONIBILI
+        vehicles.remove(hitBox.parent);
+      }
+      break;
+  }
+
+}
+
 function moveVehicles(){
   
 	if (config.utils.isPlaying){
@@ -495,6 +672,7 @@ function moveVehicles(){
           () => {
             vehicles.position.z = vehicles.position.z + delta.z;
             removeSorpassedVehicles();
+            detectCollisionWrapper();
           }
     ).onComplete(
           () => {
@@ -510,25 +688,25 @@ function createHitBox(codice_veicolo){
     case 'truck':
       hitbox.scale.set(83, 70, 205);
       hitbox.position.set(0,35, -6);
-      hitbox.name = "hitbox_truck"
+      hitbox.name = "hitbox"
       hitbox.visible = config.utils.hitbox_visible;
       return hitbox;
     case 'fiat_500':
       hitbox.scale.set(0.8, 0.7 ,1.85);
       hitbox.position.set(0,0,0);
-      hitbox.name = "hitbox_fiat_500"
+      hitbox.name = "hitbox"
       hitbox.visible = config.utils.hitbox_visible;
       return hitbox;
     case 'mercedes':
       hitbox.scale.set(180, 100 ,450);
       hitbox.position.set(0,50, 0);
-      hitbox.name = "hitbox_mercedes"
+      hitbox.name = "hitbox"
       hitbox.visible = config.utils.hitbox_visible;
       return hitbox;
     case 'bmw':
       hitbox.scale.set(2.1, 1.5 ,5.2);
       hitbox.position.set(1.1,-0.5, 0.6);
-      hitbox.name = "hitbox_bmw"
+      hitbox.name = "hitbox"
       hitbox.visible = config.utils.hitbox_visible;
       return hitbox;
   }
@@ -557,13 +735,12 @@ function spawnVehicles(){
   }
   if (!spawnAtPosition.includes(false)){
     var p = getRandomInt(0,3);
-    console.log("P: " + p);
     spawnAtPosition[p] = false;
   }
   for(let i = 0; i < spawnAtPosition.length; i ++){
     if (spawnAtPosition[i]) {
-      var cod = getRandomInt(1, num_vehicles);
-      // var cod = 1;
+      //var cod = getRandomInt(1, num_vehicles);
+      var cod =1;
       switch(cod){
         case 1:
           spawnTruck(i);
