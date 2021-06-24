@@ -11,6 +11,9 @@ var camera;
 var renderer;
 var collision =[];
 
+//Sounds variables
+var sound, carSound, listener, audioLoader;
+
 var config = {
   game: {
     velocity: 100,
@@ -79,6 +82,11 @@ const models = {
   fiat_500: {url: "./assets/cars/fiat_500/scene.gltf"},
   mercedes: {url: "./assets/cars/mercedes/scene.gltf"},
   bmw: {url: "./assets/cars/bmw/scene.gltf"},
+}
+
+const sounds = {
+  soundtrack: {url: "./assets/music/cotton_eye_joe.wav"},
+  carSound: {url: "./assets/music/carSound.wav"},
 }
 
 //For Collisions
@@ -349,14 +357,16 @@ function initvehicles(){
 
 
 var modelsLoaded = false;
+var soundsLoaded = false;
 loadModels();
+loadSounds();
 
 
 function loadModels(){
   const modelsLoadMngr = new THREE.LoadingManager();
   modelsLoadMngr.onLoad = () => {
     modelsLoaded = true;
-    if (modelsLoaded){
+    if (modelsLoaded && soundsLoaded){
       init();
     }
   };
@@ -416,6 +426,15 @@ function init(){
   //declaring control variable
   const controls = new OrbitControls(camera, renderer.domElement);
   
+
+  listener = new THREE.AudioListener();
+  camera.add(listener);
+
+  sound = new THREE.Audio(listener);
+  carSound = new THREE.Audio(listener);
+
+  audioLoader = new THREE.AudioLoader();
+
   
   //Setting the Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -442,7 +461,6 @@ function init(){
 
 
   document.getElementById("main_menu").hidden = false;
-
   initFerrari();
   initvehicles();
   initRoad();
@@ -464,6 +482,7 @@ function init(){
 function start(){
 
   document.getElementById("main_menu").hidden = true;
+  playSoundTrack();
   pushFerrariOnInitPosition();
   moveVehicles();
   moveFerrari();
@@ -495,6 +514,10 @@ function initListenerKeyboard(){
         config.utils.isPlaying = !config.utils.isPlaying;
         if(config.utils.isPlaying) start();
         break;
+      case 'KeyM':
+        if (config.game.soundsOn) stopSounds();
+        else startSounds();
+        break
     }
   }
   document.onkeyup = function(e){
@@ -800,3 +823,52 @@ function spawnVehicles(){
     }
   }
 }
+
+//Sounds functions
+
+function loadSounds() {
+
+	const soundsLoaderMngr = new THREE.LoadingManager();
+	soundsLoaderMngr.onLoad = () => {
+
+		soundsLoaded = true;
+
+		// hide the loading bar
+		//document.querySelector('#sounds_loading').hidden = true;
+
+		if(modelsLoaded & soundsLoaded) {
+			init();
+		}
+	};
+
+	const modelsProgressBar = document.querySelector('#sounds_progressbar');
+	soundsLoaderMngr.onProgress = (url, itemsLoaded, itemsTotal) => {
+		console.log("Loading sounds... ", itemsLoaded / itemsTotal * 100, '%');
+	};
+	{
+		const audioLoader = new THREE.AudioLoader(soundsLoaderMngr);
+		for (const sound of Object.values(sounds)) {
+			audioLoader.load( sound.url, function( buffer ) {
+				
+				sound.sound = buffer;
+
+				console.log("Loaded ", buffer);
+			});
+		}
+	} 
+}
+
+function playSoundTrack(){
+  sound.isPlaying = false;
+  sound.setBuffer(sounds.soundtrack.sound);
+  sound.setLoop(true);
+  sound.setVolume(0.3);
+  sound.play();
+  carSound.isPlaying = false;
+  carSound.setBuffer(sounds.carSound.sound);
+  carSound.setLoop(true);
+  carSound.setVolume(0.2)
+  carSound.play();
+}
+
+
