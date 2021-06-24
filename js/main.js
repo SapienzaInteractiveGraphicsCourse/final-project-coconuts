@@ -44,6 +44,9 @@ var ferrari = {
     right: 1,
     back: 2,
   },
+  elements:{
+    wheel : {},
+  },
   rotations :{
     right: Math.PI - degtorad(15),
     left: Math.PI + degtorad(15),
@@ -93,7 +96,6 @@ function initFerrari(){
   ferrari.mesh.position.set(0,config.game.yspawn,0);
   ferrari.mesh.rotation.set(0,Math.PI,0);
   let body = models.ferrari.gltf.getObjectByName('RootNode');
-  let wheel = models.ferrari.gltf.getObjectByName('Cylinder');
 
   ferrari_hitbox = new THREE.Mesh(hitBox, hitBox_material);
   ferrari_hitbox.name = "ferrari_hitbox";
@@ -102,10 +104,28 @@ function initFerrari(){
   ferrari_hitbox.visible = config.utils.hitbox_visible;
 
   ferrari.mesh.add(body);
-  ferrari.mesh.add(wheel);
   ferrari.mesh.add(ferrari_hitbox);
   scene.add(ferrari.mesh);
+
+  initFerrariElements();
 }
+function initFerrariElements() {
+
+	ferrari.mesh.traverse( o => {
+
+    console.log(o.name);
+		
+		if (o.name === 'Cylinder') { 
+			ferrari.elements.wheel.forward = o;
+    }
+    if (o.name === 'Cylinder001') { 
+			ferrari.elements.wheel.backward = o;
+    }
+
+	} );
+
+}
+
 
 function initRoad(){
   const texLoader = new THREE.TextureLoader();
@@ -446,6 +466,7 @@ function performMovementTo( pos){
         .easing(TWEEN.Easing.Linear.None)
         .onUpdate( 
               () => {
+                ferrari.elements.wheel.forward.rotation.set(0, ferrari.elements.wheel.forward.rotation.y ,ferrari.elements.wheel.forward.rotation.z);
                 ferrari.mesh.position.x = ferrari.mesh.position.x + delta.x;
               }
         ).onComplete(() =>{
@@ -503,8 +524,8 @@ function moveFerrari(){
     .easing(TWEEN.Easing.Linear.None)
     .onUpdate( 
           () => {
-            let wheel = ferrari.body;
-            console.log(wheel);
+            ferrari.elements.wheel.forward.rotation.z = ferrari.elements.wheel.forward.rotation.z + degtorad(100*delta.z);
+            ferrari.elements.wheel.backward.rotation.z = ferrari.elements.wheel.backward.rotation.z + degtorad(100*delta.z);
             road.mesh.position.z = road.mesh.position.z + delta.z;
             
           }
