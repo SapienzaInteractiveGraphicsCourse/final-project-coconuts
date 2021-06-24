@@ -56,6 +56,14 @@ var road = {
   mesh: new THREE.Object3D()
 }
 
+var grassRight= {
+  mesh: new THREE.Object3D()
+}
+
+var grassLeft= {
+  mesh: new THREE.Object3D()
+}
+
 const hitBox = new THREE.BoxGeometry(1, 1, 1);
 const hitBox_material = new THREE.MeshStandardMaterial({
   color: 0xffffff,
@@ -126,6 +134,48 @@ function initFerrariElements() {
 
 }
 
+function InitFerrariPosition(){
+  ferrari.mesh.position.set(0, 5, 20);
+  ferrari.mesh.rotation.set(0, degtorad(90) ,0);
+  moveWheels();
+}
+
+function moveWheels(){
+  var delta = { z: 0 };
+    objectsTween = new TWEEN.Tween(delta)
+    .to({ z: 0.3 },config.game.velocity) 
+    .easing(TWEEN.Easing.Linear.None)
+    .onUpdate( 
+          () => {
+            ferrari.elements.wheel.forward.rotation.z = ferrari.elements.wheel.forward.rotation.z + degtorad(100*delta.z);
+            ferrari.elements.wheel.backward.rotation.z = ferrari.elements.wheel.backward.rotation.z + degtorad(100*delta.z);
+          }
+    ).onComplete(()=>{
+      moveWheels();
+    }).start();
+}
+
+function pushFerrariOnInitPosition(){
+  performRotationTo(degtorad(180));
+  ferrariOnStreet();
+}
+
+function ferrariOnStreet(){
+  if (ferrari.mesh.position.y < config.game.yspawn + 0.23) return;
+  var delta = { y: 0 };
+  objectsTween = new TWEEN.Tween(delta)
+  .to({ y: 0.1 },config.game.velocity) 
+  .easing(TWEEN.Easing.Linear.None)
+  .onUpdate( 
+        () => {
+          ferrari.mesh.position.y = ferrari.mesh.position.y - delta.y;
+          ferrari.mesh.position.z = ferrari.mesh.position.z - delta.y;
+        }
+  ).onComplete(() =>{
+    ferrariOnStreet();
+  }).start();
+}
+
 
 function initRoad(){
   const texLoader = new THREE.TextureLoader();
@@ -145,6 +195,52 @@ function initRoad(){
   road.mesh.scale.set(15000,1,20);
   road.mesh.receiveShadow = true;
   scene.add( road.mesh );
+}
+
+function initGrassRight(){
+  const texLoader = new THREE.TextureLoader();
+  const geometry = new THREE.BoxGeometry(1,1,1);
+
+  var texture = texLoader.load("./assets/environment/sand.jpg");
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set( 150, 5 );
+
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+  });
+
+  grassRight.mesh = new THREE.Mesh( geometry, material );
+  grassRight.mesh.position.set(config.game.x_lane_3 +12.7, config.game.yspawn - 0.5 , 0);
+  grassRight.mesh.rotation.set(0,Math.PI/2,0);
+  grassRight.mesh.scale.set(15000,1,20);
+  grassRight.mesh.receiveShadow = true;
+  scene.add( grassRight.mesh );
+
+
+}
+
+function initGrassLeft(){
+  const texLoader = new THREE.TextureLoader();
+  const geometry = new THREE.BoxGeometry(1,1,1);
+
+  var texture = texLoader.load("./assets/environment/sand.jpg");
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set( 150, 2 );
+
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+  });
+
+  grassLeft.mesh = new THREE.Mesh( geometry, material );
+  grassLeft.mesh.position.set(config.game.x_lane_0 -12.7, config.game.yspawn - 0.5 , 0);
+  grassLeft.mesh.rotation.set(0,Math.PI/2,0);
+  grassLeft.mesh.scale.set(15000,1,20);
+  grassLeft.mesh.receiveShadow = true;
+  scene.add( grassLeft.mesh );
+
+
 }
 
 function spawnTruck(corsia){
@@ -324,7 +420,7 @@ function init(){
   //Setting the Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
   const directionalLight = new THREE.DirectionalLight(0xffffff, 3, 100);
-  directionalLight.position.set(0, 10, config.game.zspawn + 3);
+  directionalLight.position.set(0, 10, config.game.zspawn + 10);
   var directionalLightTargetObject = new THREE.Object3D();
   directionalLightTargetObject.position.set(0, 0, config.game.zspawn + 4);
 
@@ -350,8 +446,10 @@ function init(){
   initFerrari();
   initvehicles();
   initRoad();
+  initGrassRight();
+  initGrassLeft();
   initListenerKeyboard();
-  //provaspawnVec();
+  InitFerrariPosition();
     
   const animate = function() {
     requestAnimationFrame( animate );
@@ -366,6 +464,7 @@ function init(){
 function start(){
 
   document.getElementById("main_menu").hidden = true;
+  pushFerrariOnInitPosition();
   moveVehicles();
   moveFerrari();
 }
@@ -527,6 +626,8 @@ function moveFerrari(){
             ferrari.elements.wheel.forward.rotation.z = ferrari.elements.wheel.forward.rotation.z + degtorad(100*delta.z);
             ferrari.elements.wheel.backward.rotation.z = ferrari.elements.wheel.backward.rotation.z + degtorad(100*delta.z);
             road.mesh.position.z = road.mesh.position.z + delta.z;
+            grassRight.mesh.position.z = grassRight.mesh.position.z + delta.z;
+            grassLeft.mesh.position.z = grassLeft.mesh.position.z + delta.z;
             
           }
     ).onComplete(
