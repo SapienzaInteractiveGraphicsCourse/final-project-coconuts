@@ -190,7 +190,7 @@ canvas {
     color: #212121;
   }
   
-  #scores_box {
+  #health_and_score {
     position: absolute;
     top: 2.5vh;
     left: 0vw;
@@ -199,7 +199,7 @@ canvas {
     width: 100%;
   }
 
-  #scores_box h2 {
+  #health_and_score h2 {
     font-family: 'Montserrat';
     font-size: 1em;
     text-align: center;
@@ -207,8 +207,8 @@ canvas {
     /*-webkit-text-stroke: 1px black;*/
   }
 
-  #scores_box img {
-    width: 1.5em;
+  #health_and_score img {
+    width: 10em;
     align: center;
   }
 

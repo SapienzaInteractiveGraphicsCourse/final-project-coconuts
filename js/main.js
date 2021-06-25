@@ -12,7 +12,9 @@ var renderer;
 var collision =[];
 
 //Sounds variables
-var sound, carSound, listener, audioLoader;
+var sound, carSound, listener, audioLoader, pickupSound;
+
+var fuelTween;
 
 var config = {
   game: {
@@ -26,6 +28,9 @@ var config = {
     x_lane_3: 7.3,
     z_lane: 150,
     z_remove: 25,
+    z_max: 35,
+    z_min: 18,
+    health: 3,
   },
   colors: {
     sky: 'white',
@@ -33,7 +38,9 @@ var config = {
   utils: {
     showFog: true,
     isPlaying: false,
-    hitbox_visible: true,
+    isStarted: false,
+    hitbox_visible: false,
+    soundsOn: false,
   }
   
 }
@@ -74,19 +81,22 @@ const hitBox_material = new THREE.MeshStandardMaterial({
   opacity: .2,
 });
 
-const num_vehicles = 6; 
+const num_vehicles = 5; 
 const models = {
   ferrari: {url: "./assets/cars/ferrari/scene.gltf"},
   road: {url: "./assets/environment/road/scene.gltf"},
   truck: {url: "./assets/cars/truck/scene.gltf"},
   fiat_500: {url: "./assets/cars/fiat_500/scene.gltf"},
-  mercedes: {url: "./assets/cars/mercedes/scene.gltf"},
-  bmw: {url: "./assets/cars/bmw/scene.gltf"},
+  smart: {url: "./assets/cars/smart/scene.gltf"},
+  police: {url: "./assets/cars/police_car/scene.gltf"},
+  fuel_tank: {url: "./assets/environment/fuel_tank/scene.gltf"},
 }
 
 const sounds = {
   soundtrack: {url: "./assets/music/cotton_eye_joe.wav"},
   carSound: {url: "./assets/music/carSound.wav"},
+  pickupSound: {url: "./assets/music/pickup.wav"},
+  crashSound: {url: "./assets/music/crash.wav"},
 }
 
 //For Collisions
@@ -128,8 +138,6 @@ function initFerrari(){
 function initFerrariElements() {
 
 	ferrari.mesh.traverse( o => {
-
-    console.log(o.name);
 		
 		if (o.name === 'Cylinder') { 
 			ferrari.elements.wheel.forward = o;
@@ -251,7 +259,7 @@ function initGrassLeft(){
 
 }
 
-function spawnTruck(corsia){
+function spawnTruck(corsia,offset){
 
   var truck = new THREE.Object3D();
   truck.name = "Truck";
@@ -262,17 +270,17 @@ function spawnTruck(corsia){
   truck.add(hitbox_truck);
 
   truck.rotation.y = -Math.PI;
-  if (corsia == 0) truck.position.set(config.game.x_lane_0, 0, -vehicles.position.z - config.game.z_lane);
-  else if (corsia == 1) truck.position.set(config.game.x_lane_1,  0,-vehicles.position.z - config.game.z_lane);
-  else if (corsia == 2) truck.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - config.game.z_lane);
-  else if (corsia == 3) truck.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - config.game.z_lane);
+  if (corsia == 0) truck.position.set(config.game.x_lane_0, 0, -vehicles.position.z - config.game.z_lane + offset);
+  else if (corsia == 1) truck.position.set(config.game.x_lane_1,  0,-vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 2) truck.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 3) truck.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - config.game.z_lane+ offset);
   truck.scale.set(0.04,0.04,0.04);
   
 
   vehicles.add(truck);
 }
 
-function spawn500(corsia){
+function spawn500(corsia,offset){
   var fiat_500 = new THREE.Object3D();
   fiat_500.name = "Fiat_500";
   let body = models.fiat_500.gltf.clone();
@@ -282,66 +290,86 @@ function spawn500(corsia){
   fiat_500.add(hitbox_fiat_500);
 
   fiat_500.rotation.y = -Math.PI;
-  if (corsia == 0) fiat_500.position.set(config.game.x_lane_0, 1.2,   -vehicles.position.z - config.game.z_lane);
-  else if (corsia == 1) fiat_500.position.set(config.game.x_lane_1,  1.2,-vehicles.position.z - config.game.z_lane);
-  else if (corsia == 2) fiat_500.position.set(config.game.x_lane_2, 1.2,   -vehicles.position.z - config.game.z_lane);
-  else if (corsia == 3) fiat_500.position.set(config.game.x_lane_3, 1.2,  -vehicles.position.z - config.game.z_lane);
+  if (corsia == 0) fiat_500.position.set(config.game.x_lane_0, 1.2,   -vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 1) fiat_500.position.set(config.game.x_lane_1,  1.2,-vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 2) fiat_500.position.set(config.game.x_lane_2, 1.2,   -vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 3) fiat_500.position.set(config.game.x_lane_3, 1.2,  -vehicles.position.z - config.game.z_lane+ offset);
   fiat_500.scale.set(2.7,2.7,2.7);
   
   vehicles.add(fiat_500);
 }
 
-function spawnMercedes(corsia){
-  var mercedes = new THREE.Object3D();
-  mercedes.name = "mercedes";
-  let body = models.mercedes.gltf.clone();
-  let hitbox_mercedes = createHitBox("mercedes");
+function spawnSmart(corsia,offset){
+  var smart = new THREE.Object3D();
+  smart.name = "smart";
+  let body = models.smart.gltf.clone();
+  let hitbox_smart = createHitBox("smart");
   
-  mercedes.add(body);
-  mercedes.add(hitbox_mercedes);
+  smart.add(body);
+  smart.add(hitbox_smart);
 
-  mercedes.rotation.y = -Math.PI;
-  if (corsia == 0) mercedes.position.set(config.game.x_lane_0, 0,   -vehicles.position.z - config.game.z_lane);
-  else if (corsia == 1) mercedes.position.set(config.game.x_lane_1,  0,-vehicles.position.z - config.game.z_lane);
-  else if (corsia == 2) mercedes.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - config.game.z_lane);
-  else if (corsia == 3) mercedes.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - config.game.z_lane);
-  mercedes.scale.set(0.016,0.016,0.016);
+  smart.rotation.y = -Math.PI;
+  if (corsia == 0) smart.position.set(config.game.x_lane_0, 0,   -vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 1) smart.position.set(config.game.x_lane_1,  0,-vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 2) smart.position.set(config.game.x_lane_2, 0,   -vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 3) smart.position.set(config.game.x_lane_3, 0,  -vehicles.position.z - config.game.z_lane+ offset);
+  smart.scale.set(0.016,0.016,0.016);
   
-  vehicles.add(mercedes);
+  vehicles.add(smart);
 
 }
 
-function spawnBmw(corsia){
-  var bmw = new THREE.Object3D();
-  bmw.name = "bmw";
-  let body = models.bmw.gltf.clone();
-  let hitbox_bmw = createHitBox("bmw");
+function spawnpolice(corsia,offset){
+  var police = new THREE.Object3D();
+  police.name = "police";
+  let body = models.police.gltf.clone();
+  let hitbox_police = createHitBox("police");
   
-  bmw.add(body);
-  bmw.add(hitbox_bmw);
+  police.add(body);
+  police.add(hitbox_police);
 
-  if (corsia == 0) bmw.position.set(config.game.x_lane_0-1.5, 1.6,   -vehicles.position.z - config.game.z_lane);
-  else if (corsia == 1) bmw.position.set(config.game.x_lane_1-1.5,  1.6,-vehicles.position.z - config.game.z_lane);
-  else if (corsia == 2) bmw.position.set(config.game.x_lane_2-1.5, 1.6,   -vehicles.position.z - config.game.z_lane);
-  else if (corsia == 3) bmw.position.set(config.game.x_lane_3-1.5, 1.6,  -vehicles.position.z - config.game.z_lane);
-  bmw.scale.set(1.5, 1.5, 1.5);
+  police.rotation.y = -Math.PI;
+  if (corsia == 0) police.position.set(config.game.x_lane_0-0.5, 0,   -vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 1) police.position.set(config.game.x_lane_1-0.5,  0,-vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 2) police.position.set(config.game.x_lane_2-0.5, 0,   -vehicles.position.z - config.game.z_lane+ offset);
+  else if (corsia == 3) police.position.set(config.game.x_lane_3-0.5, 0,  -vehicles.position.z - config.game.z_lane+ offset);
+  police.scale.set(1.3,1.3, 1.3);
   
-  vehicles.add(bmw);
+  vehicles.add(police);
 
+}
+
+function spawnFuelTanks(corsia){
+  var fuel_tank = new THREE.Object3D();
+  fuel_tank.name = "fuel_tank";
+  let body = models.fuel_tank.gltf.clone();
+  let hitbox_fuel = createHitBox("fuel_tank");
+  
+  fuel_tank.add(body);
+  fuel_tank.add(hitbox_fuel);
+
+  fuel_tank.rotation.y = -Math.PI;
+  if (corsia == 0) fuel_tank.position.set(config.game.x_lane_0-0.5, 1.8,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 1) fuel_tank.position.set(config.game.x_lane_1-0.5, 1.8,-vehicles.position.z - config.game.z_lane);
+  else if (corsia == 2) fuel_tank.position.set(config.game.x_lane_2-0.5, 1.8,   -vehicles.position.z - config.game.z_lane);
+  else if (corsia == 3) fuel_tank.position.set(config.game.x_lane_3-0.5, 1.8,  -vehicles.position.z - config.game.z_lane);
+  fuel_tank.scale.set(1,1, 1);
+  
+  vehicles.add(fuel_tank);
 }
 
 function provaspawnVec(){
   var truck = new THREE.Object3D();
-  truck.name = "mercedes";
-  let body = models.mercedes.gltf.clone();
-  let hitbox_truck = createHitBox("bmw");
+  truck.name = "police";
+  let body = models.fuel_tank.gltf.clone();
+  let hitbox_truck = createHitBox("fuel_tank");
   
   truck.add(body);
   truck.add(hitbox_truck);
 
-
-  truck.position.set(config.game.x_lane_2 - 1.5,0,   -vehicles.position.z - 5);
-  truck.scale.set(0.016,0.016,0.016);
+  truck.rotation.y = -Math.PI;
+  truck.position.set(config.game.x_lane_2 ,1.8,   -vehicles.position.z - 5);
+  truck.scale.set(1,1, 1);
   
 
   //scene.add(truck);
@@ -432,6 +460,7 @@ function init(){
 
   sound = new THREE.Audio(listener);
   carSound = new THREE.Audio(listener);
+  pickupSound = new THREE.Audio(listener);
 
   audioLoader = new THREE.AudioLoader();
 
@@ -461,11 +490,13 @@ function init(){
 
 
   document.getElementById("main_menu").hidden = false;
+  setSpawnRefuel();
   initFerrari();
   initvehicles();
   initRoad();
   initGrassRight();
   initGrassLeft();
+  //provaspawnVec();
   initListenerKeyboard();
   InitFerrariPosition();
     
@@ -482,9 +513,21 @@ function init(){
 function start(){
 
   document.getElementById("main_menu").hidden = true;
+  document.getElementById("health_and_score").hidden = false;
+  document.getElementById("tank1").hidden = true;
+  document.getElementById("tank2").hidden = true;
+  document.getElementById("tank3").hidden = false;
+
   playSoundTrack();
   pushFerrariOnInitPosition();
   moveVehicles();
+  animateFuel();
+  moveFerrari();
+}
+function resumePlaying(){
+  resumeSounds();
+  moveVehicles();
+  animateFuel();
   moveFerrari();
 }
 
@@ -505,18 +548,36 @@ function initListenerKeyboard(){
         performRotationTo(ferrari.rotations.right);
         break;
       case 'KeyW':
+      case 'ArrowUp':
         moveAhead();
         break;
       case 'KeyS':
+      case 'ArrowDown':
         moveBack();
         break;
       case 'Enter':
-        config.utils.isPlaying = !config.utils.isPlaying;
-        if(config.utils.isPlaying) start();
-        break;
+        if (! config.utils.isStarted) {
+          config.utils.isStarted = true;
+          config.utils.isPlaying = true;
+          start();
+          break;
+        }
+        else{
+          if (config.utils.isPlaying){
+            config.utils.isPlaying = false;
+            pauseSounds();
+            break;
+          }
+          else{
+            config.utils.isPlaying = true;
+            resumeSounds();
+            resumePlaying();
+            break;
+          }
+        }
       case 'KeyM':
-        if (config.game.soundsOn) stopSounds();
-        else startSounds();
+        if (config.utils.soundsOn) pauseSounds();
+        else resumeSound();
         break
     }
   }
@@ -535,12 +596,12 @@ function moveRight(){
 }
 
 function moveAhead(){
-  //if (ferrari.mesh.position.x > config.game.x_lane_3) return; Mettere controllo sulla Z
+  if (ferrari.mesh.position.z < -config.game.z_max) return; 
   performMovementTo(ferrari.positions.ahead);
 }
 
 function moveBack(){
-  //if (ferrari.mesh.position.x > config.game.x_lane_3) return; Mettere controllo sulla Z
+  if (ferrari.mesh.position.z > config.game.z_min) return;
   performMovementTo(ferrari.positions.back);
 }
 
@@ -655,7 +716,7 @@ function moveFerrari(){
           }
     ).onComplete(
           () => {
-            if (frames-frame_ref > 120){
+            if (frames-frame_ref > 150){
               frame_ref = frames;
               spawnVehicles();
             }
@@ -664,6 +725,7 @@ function moveFerrari(){
     ).start();
   }
 }
+ 
 
 function removeSorpassedVehicles(){
   let carsToRemove = [];
@@ -672,17 +734,17 @@ function removeSorpassedVehicles(){
     if ( child.isMesh){
       let object=child.parent;
       let objectPos = vehicles.position.z + object.position.z;
-      if (objectPos > config.game.z_remove) {
-        carsToRemove.push(object);
-        //console.log(object.name);
+      if (object.name == 'Truck' || object.name == 'smart' || object.name == 'police' || object.name == 'Fiat_500'){
+        if (objectPos > config.game.z_remove) {
+          carsToRemove.push(object);
+        }
       }
     }
   });
   carsToRemove.forEach((object)=>{
-    vehicles.remove(object.name);
+    vehicles.remove(object);   
   });
 }
-
 
 function detectCollisionWrapper(){
 
@@ -697,6 +759,8 @@ function detectCollisionWrapper(){
 
   hitbox_toCheck.forEach(detectCollision);
 }
+
+var hit_ref = 0;
 
 function detectCollision(hitbox){
 
@@ -723,6 +787,41 @@ function detectCollision(hitbox){
 function hitManager(hitBox){
   let collision_object = hitBox.parent;
   vehicles.remove(collision_object);
+  if (frames - hit_ref > 10){
+    hit_ref = frames;
+    if (collision_object.name == 'fuel_tank'){
+      playSoundPickUp();
+      if (config.game.health == 1){
+        config.game.health =2;
+        document.getElementById("tank1").hidden = true;
+        document.getElementById("tank2").hidden = false;
+        document.getElementById("tank3").hidden = true;
+      }
+      else if (config.game.health == 2){
+        config.game.health = 3;
+        document.getElementById("tank1").hidden = true;
+        document.getElementById("tank2").hidden = true;
+        document.getElementById("tank3").hidden = false;
+      }
+    }
+    else{
+      console.log("SONO QUI");
+      if (config.game.health == 3){
+        playCrashSound();
+        config.game.health =2;
+        document.getElementById("tank1").hidden = true;
+        document.getElementById("tank2").hidden = false;
+        document.getElementById("tank3").hidden = true;
+      }
+      else if (config.game.health == 2){
+        playCrashSound();
+        config.game.health = 1;
+        document.getElementById("tank1").hidden = false;
+        document.getElementById("tank2").hidden = true;
+        document.getElementById("tank3").hidden = true;
+      }
+    }
+  }
 
 }
 
@@ -738,6 +837,7 @@ function moveVehicles(){
             vehicles.position.z = vehicles.position.z + delta.z;
             removeSorpassedVehicles();
             detectCollisionWrapper(); 
+            
           }
     ).onComplete(
           () => {
@@ -745,6 +845,45 @@ function moveVehicles(){
           }
     ).start();
   }
+}
+
+var goDown = true;
+function moveUpDown(obj){
+  if (goDown){
+    if (obj.position.y > 0.5) obj.position.y -= 0.05;
+    else goDown = false;
+
+  }
+  if (!goDown){
+    if (obj.position.y < 2) obj.position.y += 0.05;
+    else goDown = true;
+  }
+}
+
+
+function animateFuel(){
+  var rotation = { y: 0 };
+	fuelTween = new TWEEN.Tween(rotation)
+	.to({ y: degtorad(360) }, 2500) 
+	.easing(TWEEN.Easing.Linear.None)
+	.onUpdate( () => { 
+		
+		let fuel_tanks = [];
+    vehicles.traverse( function (child){
+      if (child.name == 'fuel_tank') {
+        fuel_tanks.push(child);
+      }
+    });
+    fuel_tanks.forEach((child) =>{
+      child.rotation.y = rotation.y;
+      moveUpDown(child);
+    });
+
+	}	)
+	.onComplete( () => { 
+		animateFuel(); // restart
+	} )
+	.start();
 }
 
 function createHitBox(codice_veicolo){
@@ -762,15 +901,21 @@ function createHitBox(codice_veicolo){
       hitbox.name = "hitbox"
       hitbox.visible = config.utils.hitbox_visible;
       return hitbox;
-    case 'mercedes':
-      hitbox.scale.set(180, 100 ,450);
+    case 'smart':
+      hitbox.scale.set(135, 100 ,250);
       hitbox.position.set(0,50, 0);
       hitbox.name = "hitbox"
       hitbox.visible = config.utils.hitbox_visible;
       return hitbox;
-    case 'bmw':
-      hitbox.scale.set(2.1, 1.5 ,5.2);
-      hitbox.position.set(1.1,-0.5, 0.6);
+    case 'police':
+      hitbox.scale.set(2.2, 1 ,6.3);
+      hitbox.position.set(-0.45,0,0);
+      hitbox.name = "hitbox"
+      hitbox.visible = config.utils.hitbox_visible;
+      return hitbox;
+    case 'fuel_tank':
+      hitbox.scale.set(1.5, 4 ,0.9);
+      hitbox.position.set(0,0,0);
       hitbox.name = "hitbox"
       hitbox.visible = config.utils.hitbox_visible;
       return hitbox;
@@ -781,9 +926,18 @@ function createHitBox(codice_veicolo){
 
 }
 
+var spawnRefuel = 0;
+var counter = 0;
+function setSpawnRefuel(){
+  if (config.game.difficulty == 1) spawnRefuel = 1;
+  if (config.game.difficulty == 2) spawnRefuel = 3;
+  if (config.game.difficulty == 3) spawnRefuel = 5;
+}
+
 function spawnVehicles(){
   var max = 3;
   var min = 0;
+  var offsets = [10,15,20,25,30];
   let spawnAtPosition = [];
   for (let i = 0; i < 4; i ++) spawnAtPosition.push(false);
   for(var i = 0; i < 4; i++){
@@ -804,21 +958,29 @@ function spawnVehicles(){
   }
   for(let i = 0; i < spawnAtPosition.length; i ++){
     if (spawnAtPosition[i]) {
-      var cod = getRandomInt(1, 2);
+      var cod = getRandomInt(1, num_vehicles);
+      var offset = getRandomInt(0, offsets.length-1);
+      offset = offsets[offset];
       //var cod =1;
       switch(cod){
         case 1:
-          spawnTruck(i);
+          spawnTruck(i,offset);
           break;
         case 2:
-          spawn500(i);
+          spawn500(i,offset);
           break;
         case 3:
-          spawnMercedes(i);
+          spawnSmart(i,offset);
           break;
         case 4:
-          spawnBmw(i);
+          spawnpolice(i,offset);
           break;
+        case 5:
+          if (counter < spawnRefuel) counter += 1;
+          else{
+            counter = 0;
+            spawnFuelTanks(i); 
+          }
       }
     }
   }
@@ -858,7 +1020,10 @@ function loadSounds() {
 	} 
 }
 
+
+
 function playSoundTrack(){
+  config.utils.soundsOn = true;
   sound.isPlaying = false;
   sound.setBuffer(sounds.soundtrack.sound);
   sound.setLoop(true);
@@ -871,4 +1036,32 @@ function playSoundTrack(){
   carSound.play();
 }
 
+function playSoundPickUp(){
+  if (config.utils.soundsOn){
+    pickupSound.isPlaying = false;
+    pickupSound.setBuffer(sounds.pickupSound.sound);
+    pickupSound.setLoop(false);
+    pickupSound.setVolume(0.2)
+    pickupSound.play();
+  }
+}
 
+function playCrashSound(){
+  if (config.utils.soundsOn){
+    pickupSound.isPlaying = false;
+    pickupSound.setBuffer(sounds.crashSound.sound);
+    pickupSound.setLoop(false);
+    pickupSound.setVolume(0.5)
+    pickupSound.play();
+  }
+}
+
+function pauseSounds(){
+  sound.pause();
+  carSound.pause();
+}
+
+function resumeSounds(){
+  sound.play();
+  carSound.play();
+}
