@@ -2,26 +2,44 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>My first three.js app</title>
+		<title>Final Project CocoNuts</title>
 		<link rel="stylesheet" href="css/main.css">
+		<link href='https://fonts.googleapis.com/css?family=Black+Ops+One' rel='stylesheet' type='text/css'>
 	</head>
 	<body>
 		<div id="main_menu" hidden>
 			<img src="assets/images/sapienza_logo.png"></img>
-			<p>Press <b>Enter</b> or <b>Swipe Up</b> to start!</p>
+		</div>
+		<div id="authors" hidden>
 			
-			<div id="credits">
-				<p>
-					<b>Final Project. Interactive Graphics</b><br>
+			<div>
+				<h1>
+					<b>Final Project Interactive Graphics</b><br>
 					Ermanno Bartoli & Francesco Argenziano
-				</p>
+				</h1>
 			</div>
+
+			<p>Press <b>Enter</b> to start!</p>
+		</div>
+		<div id="game_over" hidden>
+
+			<div class="gameover">
+			<p> GAME </p>
+			<p> OVER </p>
+			</div>
+		
+			<div class="continue"> <p> Press Enter or Reload the page to play again </p> </div>
+		
 		</div>
 		<div id="health_and_score" hidden>
 			<div class="Row">
 					<img id="tank1" src="./assets/images/fuel_tank_1.png"></img>
 					<img id="tank2" src="./assets/images/fuel_tank_2.png"></img>
 					<img id="tank3" src="./assets/images/fuel_tank_3.png"></img>
+					<div id ="time_counter_class" class="Column">
+						<img id="time_img" style="width: 5em;" src="./assets/images/time.png"></img>
+						<h2 id="time_counter">2</h2>
+					</div>
 			</div>
 		</div>
 		<script src="js/three.js"></script>
