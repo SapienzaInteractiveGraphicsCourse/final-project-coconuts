@@ -155,6 +155,17 @@ canvas {
 			color: #ff3300;
 			text-shadow: 1.5px 1.5px #000000;}
 
+  #authors h2 {
+    margin-bottom: 0px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      font-family: 'VT323',;
+      color: #881100;
+      }
+  #commands h3{
+    text-align: center;
+  }
   
   #game_over {width: 750px;
 		height: 580px;
@@ -179,6 +190,60 @@ canvas {
 		animation-iteration-count: infinite;
 		animation-direction: alternate;}
 
+    #settings{
+      position:absolute;
+      right: 10vh;
+    }
+
+    #settings h2{
+      display: inline;
+    }
+
+    .button {
+      border: none;
+      color: white;
+      padding: 10px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 2px 2px;
+      transition-duration: 0.4s;
+      cursor: pointer;
+    }
+    
+    .diff1 {
+      background-color: white; 
+      color: black; 
+      border: 2px solid #4CAF50;
+    }
+    
+    .diff1:hover {
+      background-color: #4CAF50;
+      color: white;
+    }
+    
+    .diff2 {
+      background-color: white; 
+      color: black; 
+      border: 2px solid #008CBA;
+    }
+    
+    .diff2:hover {
+      background-color: #008CBA;
+      color: white;
+    }
+
+    .diff3 {
+      background-color: white; 
+      color: black; 
+      border: 2px solid #FF0000;
+    }
+    
+    .diff3  :hover {
+      background-color: #FF0000;
+      color: white;
+    }
 
 .gameover {width:750px;
 			height: auto;
@@ -206,7 +271,24 @@ canvas {
 			font-family: 'VT323',;
 			color: #ff3300;
 			text-shadow: 1.5px 1.5px #000000;}
-  
+
+.score_result	{
+  width: 750;
+  height: auto;
+  text-align: center;
+  padding-top: 20px;}
+
+.score_result p {
+  display: inline;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      text-align: center;
+      font-size: 30px;
+      font-weight: bold;
+      font-family: 'VT323',;
+      color: #000000;
+  }
+
   #health_and_score {
     position: absolute;
     top: 2.5vh;

@@ -47,6 +47,7 @@ var config = {
     soundsOn: true,
     initialPositionz: 20,
     soundAfterPlay: false,
+    displayMenu: false,
   }
   
 }
@@ -445,7 +446,12 @@ function loadModels(){
 }
 
 
-
+function readDiff(){
+  var diff = document.getElementById("difficulty").innerHTML;
+  if (diff =="Easy") config.game.difficulty = 1;
+  else if (diff == "Medium") config.game.difficulty = 2;
+  else config.game.difficulty = 3;
+}
 
 function init(){
   //Set up of the camera
@@ -535,6 +541,8 @@ function init(){
 
 function start(){
 
+  readDiff();
+  console.log("DIFFICULT: " + config.game.difficulty);
   document.getElementById("main_menu").hidden = true;
   document.getElementById("authors").hidden = true;
   document.getElementById("health_and_score").hidden = false;
@@ -544,6 +552,7 @@ function start(){
   document.getElementById("game_over").hidden = true;
   document.getElementById("time_img").hidden = false;
   document.getElementById("time_counter").hidden = false;
+  document.getElementById("settings").hidden = true;
 
   
 
@@ -586,6 +595,7 @@ function gameOver(){
   document.getElementById("game_over").hidden = false;
   document.getElementById("time_img").hidden = true;
   document.getElementById("time_counter").hidden = true;
+  document.getElementById("score_number").innerHTML = score_number;
 }
 
 // SETTING THE LISTENER FOR THE ANIMATIONS
@@ -647,12 +657,29 @@ function initListenerKeyboard(){
           }
           else resumeSounds();
         }
-        break
+        break;
+      case 'KeyC':
+        if(!config.utils.isStarted){
+          if (!config.utils.displayMenu) displayMenu();
+          else hideMenu();
+        }
+        break;
     }
   }
   document.onkeyup = function(e){
     keyPressed = false;
   }
+}
+
+function displayMenu(){
+  config.utils.displayMenu = true;
+  document.getElementById("display_start").hidden = true;
+  document.getElementById("commands").hidden = false;
+}
+function hideMenu(){
+  config.utils.displayMenu = false;
+  document.getElementById("display_start").hidden = false;
+  document.getElementById("commands").hidden = true;
 }
 
 function moveLeft(){
@@ -1012,12 +1039,14 @@ function movePlants(){
   }
 }
 
+var score_number = 0;
 
 function updateTime(){
   let time;
   if (config.utils.isPlaying)  time = (clock.getElapsedTime()+counter_time).toFixed(0) * 100;
   else  time = (counter_time).toFixed(0) * 100; 
   document.getElementById("time_counter").innerHTML = time;
+  score_number = document.getElementById("time_counter").innerHTML;
 }
 
 var goDown = true;
