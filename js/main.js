@@ -504,28 +504,39 @@ function init(){
 
   
   //Setting the Lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 3, 100);
-  directionalLight.position.set(0, 10, config.game.zspawn + 10);
-  var directionalLightTargetObject = new THREE.Object3D();
-  directionalLightTargetObject.position.set(0, 0, config.game.zspawn + 4);
+  const color = 0xFFFFFF;
+  const intensity = 5;
+  const light = new THREE.DirectionalLight(color, intensity);
+  light.position.set(0, 20, 0);
+  light.target.position.set(-10, 0, 0);
+  scene.add(light);
+  scene.add(light.target);
+  const helper = new THREE.DirectionalLightHelper(light);
+  scene.add(helper); 
 
-  scene.add(ambientLight);
-  scene.add(directionalLightTargetObject);
 
-  directionalLight.target = directionalLightTargetObject;
-  directionalLight.castShadow = true;
+  //shadow
+  // light.castShadow = true; // default false
+  // //Set up shadow properties for the light
+  // light.shadow.mapSize.width = 512; // default
+  // light.shadow.mapSize.height = 512; // default
+  // light.shadow.camera.near = 0.5; // default
+  // light.shadow.camera.far = 500; // default
 
-  directionalLight.shadow.camera.left = -10;
-	directionalLight.shadow.camera.right = 10;
-	directionalLight.shadow.camera.top = 140;
-	directionalLight.shadow.camera.bottom = 0;
-	directionalLight.shadow.camera.near = 30;
-	directionalLight.shadow.camera.far = 5;
-	directionalLight.shadow.bias = 0.0009;
+  // //Create a sphere that cast shadows (but does not receive them)
+  // const sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
+  // const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0xff0000 } );
+  // const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+  // sphere.castShadow = true; //default is false
+  // sphere.receiveShadow = false; //default
+  // scene.add( sphere );
 
-  scene.add(directionalLight);
-
+  // //Create a plane that receives shadows (but does not cast them)
+  // const planeGeometry = new THREE.PlaneGeometry( 20, 20, 32, 32 );
+  // const planeMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00 } )
+  // const plane = new THREE.Mesh( planeGeometry, planeMaterial );
+  // plane.receiveShadow = true;
+  // scene.add( plane );
 
   document.getElementById("main_menu").hidden = false;
   document.getElementById("authors").hidden = false;
