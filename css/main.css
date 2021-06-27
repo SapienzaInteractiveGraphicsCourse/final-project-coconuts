@@ -230,7 +230,7 @@ canvas {
       border: 2px solid #FF0000;
     }
     
-    .diff3  :hover {
+    .diff3:hover {
       background-color: #FF0000;
       color: white;
     }
