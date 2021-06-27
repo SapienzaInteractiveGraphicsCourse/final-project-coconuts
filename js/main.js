@@ -226,7 +226,6 @@ var cubeNormalMaterial;
 
 function initGrassRight(){
   
-  //const texLoader = new THREE.TextureLoader();
   const geometry = new THREE.BoxGeometry(1,1,1);
   cubeNormalMaterial =  new THREE.MeshPhongMaterial();
   cubeNormalMaterial.map = THREE.ImageUtils.loadTexture("./assets/environment/sand.jpg");
@@ -376,26 +375,6 @@ function spawnFuelTanks(corsia){
   vehicles.add(fuel_tank);
 }
 
-function provaspawnVec(){
-  var truck = new THREE.Object3D();
-  truck.name = "police";
-  let body = models.fuel_tank.gltf.clone();
-  let hitbox_truck = createHitBox("fuel_tank");
-  
-  truck.add(body);
-  truck.add(hitbox_truck);
-
-  truck.rotation.y = -Math.PI;
-  truck.position.set(config.game.x_lane_2 ,1.8,   -vehicles.position.z - 5);
-  truck.scale.set(1,1, 1);
-  
-
-  //scene.add(truck);
-  vehicles.add(truck);
-}
-
-
-
 function initvehicles(){
   vehicles = new THREE.Group();
   scene.add(vehicles);
@@ -446,8 +425,6 @@ function loadModels(){
 				} );
 
 				model.gltf = gltf.scene;
-				//console.log("******* GLTF Loaded *******\n", dumpObject(model.gltf).join('\n'));
-				
 			});
 		}
 	} 
@@ -465,7 +442,7 @@ function init(){
   //Set up of the camera
   camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 200 );
   camera.position.set(0, 10, 100);
-  camera.position.z = 30; //Set to 400 because the text was so big
+  camera.position.z = 30;
   camera.lookAt(0, 0, 0);
 
   //Set up of the scene
@@ -503,36 +480,12 @@ function init(){
   const color = 0xFFFFFF;
   const intensity = 5;
   const light = new THREE.DirectionalLight(color, intensity);
-  light.position.set(0, 20, 100);
+  light.position.set(30, 20, 100);
   light.target.position.set(0, 0, 0);
   scene.add(light);
   scene.add(light.target);
   const helper = new THREE.DirectionalLightHelper(light);
   scene.add(helper); 
-
-
-  //shadow
-  // light.castShadow = true; // default false
-  // //Set up shadow properties for the light
-  // light.shadow.mapSize.width = 512; // default
-  // light.shadow.mapSize.height = 512; // default
-  // light.shadow.camera.near = 0.5; // default
-  // light.shadow.camera.far = 500; // default
-
-  // //Create a sphere that cast shadows (but does not receive them)
-  // const sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
-  // const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0xff0000 } );
-  // const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-  // sphere.castShadow = true; //default is false
-  // sphere.receiveShadow = false; //default
-  // scene.add( sphere );
-
-  // //Create a plane that receives shadows (but does not cast them)
-  // const planeGeometry = new THREE.PlaneGeometry( 20, 20, 32, 32 );
-  // const planeMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00 } )
-  // const plane = new THREE.Mesh( planeGeometry, planeMaterial );
-  // plane.receiveShadow = true;
-  // scene.add( plane );
 
   document.getElementById("main_menu").hidden = false;
   document.getElementById("authors").hidden = false;
@@ -544,7 +497,6 @@ function init(){
   initRoad();
   initGrassRight();
   initGrassLeft();
-  //provaspawnVec();
   initListenerKeyboard();
   InitFerrariPosition();
     
@@ -562,7 +514,6 @@ function init(){
 function start(){
 
   readDiff();
-  console.log("DIFFICULT: " + config.game.difficulty);
   document.getElementById("main_menu").hidden = true;
   document.getElementById("authors").hidden = true;
   document.getElementById("health_and_score").hidden = false;
@@ -577,9 +528,6 @@ function start(){
   
 
   if (config.utils.soundsOn || config.utils.soundAfterPlay) {
-    console.log("PERCHE CAZZO SONO ENTRATO");
-    console.log("config.utils.soundsOn: " + config.utils.soundsOn);
-    console.log("config.utils.afterplay: " + config.utils.soundAfterPlay);
     config.utils.soundsOn = true;
     playSoundTrack();
   }
@@ -743,7 +691,7 @@ function align(){
 
 function performRotationTo( rad){
   if (config.utils.isPlaying){
-    var rotation = { y: ferrari.mesh.rotation.y }; // Start at (0, 0)
+    var rotation = { y: ferrari.mesh.rotation.y }; 
     var tween = new TWEEN.Tween(rotation)
       .to({ y: rad }, config.game.velocity)
       .easing(TWEEN.Easing.Quadratic.Out)
@@ -817,8 +765,6 @@ function performMovementTo( pos){
 var frame_ref = 0;
 var frame_ref_cactus = 0;
 function moveFerrari(){
-  //console.log(frames);
-  //console.log(ferrari_hitbox.geometry.attributes.position);
 	if (config.utils.isPlaying){
     var delta = { z: 0 };
     objectsTween = new TWEEN.Tween(delta)
@@ -936,8 +882,8 @@ var hit_ref = 0;
 function ferrariIsIn(){
   if (ferrari.mesh.position.x >= 5.25 ) return 3;
   if (ferrari.mesh.position.x >= config.game.x_lane_2 ) return 2;
-  if (ferrari.mesh.position.x >=config.game.x_lane_1 ) return 1;
-  if (ferrari.mesh.position.x >= config.game.x_lane_0) return 0;
+  if (ferrari.mesh.position.x >=-4.13 ) return 1;
+  if (ferrari.mesh.position.x >= config.game.x_lane_0 ) return 0;
 }
 
 function detectCollision(hitbox){
@@ -1105,7 +1051,7 @@ function animateFuel(){
 
 	}	)
 	.onComplete( () => { 
-		animateFuel(); // restart
+		animateFuel(); 
 	} )
 	.start();
 }
@@ -1181,13 +1127,9 @@ function spawnCactus(pos){
 }
 
 function spawnPlants(){
-
-  //var cod = getRandomInt(1, num_plants) If we add more plants
   var positionLeft = getRandomInt(minLeft, maxLeft);
   var positionRight = getRandomInt(minRight, maxRight);
-  console.log("POSLEFT: " + positionLeft);
   spawnCactus(positionLeft);
-  console.log("POSRIGHT: " + positionRight);
   spawnCactus(positionRight);
 
 
@@ -1256,9 +1198,7 @@ function loadSounds() {
 
     document.querySelector('#sounds_loading').hidden = true;
 
-		// hide the loading bar
-		//document.querySelector('#sounds_loading').hidden = true;
-
+	
 		if(modelsLoaded & soundsLoaded) {
 			init();
 		}
