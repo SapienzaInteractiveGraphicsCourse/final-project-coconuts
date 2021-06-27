@@ -7,6 +7,7 @@ var scene;
 var frames = 0;
 var objectsTween;
 var vehicles;
+var plants;
 var camera;
 var renderer;
 var collision =[];
@@ -95,6 +96,7 @@ const models = {
   smart: {url: "./assets/cars/smart/scene.gltf"},
   police: {url: "./assets/cars/police_car/scene.gltf"},
   fuel_tank: {url: "./assets/environment/fuel_tank/scene.gltf"},
+  cactus: {url: "./assets/environment/cactus/scene.gltf"},
 }
 
 const sounds = {
@@ -394,6 +396,11 @@ function initvehicles(){
   scene.add(vehicles);
 }
 
+function initPlants(){
+  plants = new THREE.Group();
+  scene.add(plants);
+}
+
 
 var modelsLoaded = false;
 var soundsLoaded = false;
@@ -507,6 +514,7 @@ function init(){
   setSpawnRefuel();
   initFerrari();
   initvehicles();
+  initPlants();
   initRoad();
   initGrassRight();
   initGrassLeft();
@@ -550,12 +558,14 @@ function start(){
   clock.start();
   pushFerrariOnInitPosition();
   moveVehicles();
+  movePlants();
   animateFuel();
   moveFerrari();
 }
 function resumePlaying(){
   resumeSounds();
   moveVehicles();
+  movePlants();
   animateFuel();
   moveFerrari();
 }
@@ -570,6 +580,7 @@ function gameOver(){
     pauseSounds();
   }
   removeAllVehicles();
+  removeAllPlants();
   ferrari.mesh.position.set(0,config.game.yspawn,0);
   document.getElementById("tank1").hidden = true;
   document.getElementById("game_over").hidden = false;
@@ -755,6 +766,7 @@ function performMovementTo( pos){
 }
 
 var frame_ref = 0;
+var frame_ref_cactus = 0;
 function moveFerrari(){
   //console.log(frames);
   //console.log(ferrari_hitbox.geometry.attributes.position);
@@ -774,9 +786,12 @@ function moveFerrari(){
           }
     ).onComplete(
           () => {
-            if (frames-frame_ref > 150){
+            if (frames -frame_ref > 150){
               frame_ref = frames;
               spawnVehicles();
+            if (frames - frame_ref_cactus > 100){
+              spawnPlants();
+            }
             }
             moveFerrari();
           }
@@ -798,6 +813,20 @@ function removeAllVehicles(){
   });
 }
 
+function removeAllPlants(){
+  let plantsToRemove = [];
+
+  vehicles.traverse( function (child) {
+    if ( child.isMesh){
+      let object=child.parent;
+      plantsToRemove.push(object);
+    }
+  });
+  plantsToRemove.forEach((object)=>{
+    plants.remove(object);   
+  });
+}
+
 
 function removeSorpassedVehicles(){
   let carsToRemove = [];
@@ -815,6 +844,25 @@ function removeSorpassedVehicles(){
   });
   carsToRemove.forEach((object)=>{
     vehicles.remove(object);   
+  });
+}
+
+function removeSorpassedPlants(){
+  let plantsToRemove = [];
+
+  plants.traverse( function (child) {
+    if ( child.isMesh){
+      let object=child.parent;
+      let objectPos = plants.position.z + object.position.z;
+      if (object.name == 'Cactus'){
+        if (objectPos > config.game.z_remove) {
+          plantsToRemove.push(object);
+        }
+      }
+    }
+  });
+  plantsToRemove.forEach((object)=>{
+    plants.remove(object);   
   });
 }
 
@@ -944,6 +992,27 @@ function moveVehicles(){
   }
 }
 
+function movePlants(){
+  
+	if (config.utils.isPlaying){
+    var delta = { z: 0 };
+    objectsTween = new TWEEN.Tween(delta)
+    .to({ z: 0.3 },config.game.velocity) 
+    .easing(TWEEN.Easing.Linear.None)
+    .onUpdate( 
+          () => {
+            plants.position.z = plants.position.z + delta.z;
+            removeSorpassedPlants();            
+          }
+    ).onComplete(
+          () => {
+            movePlants();
+          }
+    ).start();
+  }
+}
+
+
 function updateTime(){
   let time;
   if (config.utils.isPlaying)  time = (clock.getElapsedTime()+counter_time).toFixed(0) * 100;
@@ -1037,6 +1106,42 @@ function setSpawnRefuel(){
   if (config.game.difficulty == 2) spawnRefuel = 3;
   if (config.game.difficulty == 3) spawnRefuel = 5;
 }
+
+var minLeft = -36;
+var maxLeft = -20;
+var minRight= 10;
+var maxRight= 22;
+
+function spawnCactus(pos){
+  var cactus = new THREE.Object3D();
+  cactus.name = "cactus";
+  cactus.pos = pos;
+  let body = models.cactus.gltf.clone();
+  
+  cactus.add(body);
+
+  cactus.rotation.y = -Math.PI/2;
+  cactus.position.set(pos, 0,  -vehicles.position.z - config.game.z_lane);
+  cactus.scale.set(0.7,0.7,0.7);
+  
+
+  vehicles.add(cactus);
+
+}
+
+function spawnPlants(){
+
+  //var cod = getRandomInt(1, num_plants) If we add more plants
+  var positionLeft = getRandomInt(minLeft, maxLeft);
+  var positionRight = getRandomInt(minRight, maxRight);
+  console.log("POSLEFT: " + positionLeft);
+  spawnCactus(positionLeft);
+  console.log("POSRIGHT: " + positionRight);
+  spawnCactus(positionRight);
+
+
+}
+
 
 function spawnVehicles(){
   var max = 3;
