@@ -222,55 +222,52 @@ function initRoad(){
   road.mesh.receiveShadow = true;
   scene.add( road.mesh );
 }
-
-var crateTexture, crateBumpMap, crateNormalMap;
+var cubeNormalMaterial;
 
 function initGrassRight(){
   
-  const texLoader = new THREE.TextureLoader();
+  //const texLoader = new THREE.TextureLoader();
   const geometry = new THREE.BoxGeometry(1,1,1);
+  cubeNormalMaterial =  new THREE.MeshPhongMaterial();
+  cubeNormalMaterial.map = THREE.ImageUtils.loadTexture("./assets/environment/sand.jpg");
+  cubeNormalMaterial.map.wrapS = THREE.RepeatWrapping;
+  cubeNormalMaterial.map.wrapT = THREE.RepeatWrapping;
+  cubeNormalMaterial.map.repeat.set( 200, 2 );
+  cubeNormalMaterial.normalMap = THREE.ImageUtils.loadTexture("./assets/environment/sand_bump.jpg");
+  cubeNormalMaterial.normalMap.wrapS = THREE.RepeatWrapping;
+  cubeNormalMaterial.normalMap.wrapT = THREE.RepeatWrapping;
+  cubeNormalMaterial.normalMap.repeat.set( 200, 2 );
 
-  crateTexture = texLoader.load("./assets/environment/sand.jpg");
-  crateNormalMap = texLoader.load("./assets/environment/sand_bump.jpg")
- 
   grassRight.mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(1,1,1),
-    new THREE.MeshPhongMaterial({
-      color      :  new THREE.Color("rgb(255,255,255)"),
-    emissive   :  new THREE.Color("rgb(7,3,5)"),
-    specular   :  new THREE.Color("rgb(255,255,255)"),
-    shininess  :  20,
-      map: crateTexture,
-      bumpmap: crateNormalMap
-    })
-  );
+    geometry, cubeNormalMaterial);
   grassRight.mesh.position.set(config.game.x_lane_3 +12.7, config.game.yspawn - 0.5 , 0);
-  grassRight.mesh.rotation.set(0,Math.PI/2,Math.PI);
+  grassRight.mesh.rotation.set(0,Math.PI/2,0);
   grassRight.mesh.scale.set(15000,1,20);
-  scene.add( grassRight.mesh );
-
+  grassRight.mesh.receiveShadow = true;
+  scene.add(grassRight.mesh);
+  
 
 }
 
 function initGrassLeft(){
-  const texLoader = new THREE.TextureLoader();
   const geometry = new THREE.BoxGeometry(1,1,1);
+  cubeNormalMaterial =  new THREE.MeshPhongMaterial();
+  cubeNormalMaterial.map = THREE.ImageUtils.loadTexture("./assets/environment/sand.jpg");
+  cubeNormalMaterial.map.wrapS = THREE.RepeatWrapping;
+  cubeNormalMaterial.map.wrapT = THREE.RepeatWrapping;
+  cubeNormalMaterial.map.repeat.set( 200, 2 );
+  cubeNormalMaterial.normalMap = THREE.ImageUtils.loadTexture("./assets/environment/sand_bump.jpg");
+  cubeNormalMaterial.normalMap.wrapS = THREE.RepeatWrapping;
+  cubeNormalMaterial.normalMap.wrapT = THREE.RepeatWrapping;
+  cubeNormalMaterial.normalMap.repeat.set( 200, 2 );
 
-  var texture = texLoader.load("./assets/environment/sand.jpg");
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set( 150, 2 );
-
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-  });
-
-  grassLeft.mesh = new THREE.Mesh( geometry, material );
+  grassLeft.mesh = new THREE.Mesh(
+    geometry, cubeNormalMaterial);
   grassLeft.mesh.position.set(config.game.x_lane_0 -12.7, config.game.yspawn - 0.5 , 0);
   grassLeft.mesh.rotation.set(0,Math.PI/2,0);
   grassLeft.mesh.scale.set(15000,1,20);
   grassLeft.mesh.receiveShadow = true;
-  scene.add( grassLeft.mesh );
+  scene.add(grassLeft.mesh);
 
 
 }
@@ -506,7 +503,7 @@ function init(){
   const color = 0xFFFFFF;
   const intensity = 5;
   const light = new THREE.DirectionalLight(color, intensity);
-  light.position.set(100, 20, 100);
+  light.position.set(0, 20, 100);
   light.target.position.set(0, 0, 0);
   scene.add(light);
   scene.add(light.target);
