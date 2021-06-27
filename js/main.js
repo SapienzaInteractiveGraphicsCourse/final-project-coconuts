@@ -237,13 +237,16 @@ function initGrassRight(){
   grassRight.mesh = new THREE.Mesh(
     new THREE.BoxGeometry(1,1,1),
     new THREE.MeshPhongMaterial({
-      color: 0xffffff,
+      color      :  new THREE.Color("rgb(255,255,255)"),
+    emissive   :  new THREE.Color("rgb(7,3,5)"),
+    specular   :  new THREE.Color("rgb(255,255,255)"),
+    shininess  :  20,
       map: crateTexture,
       bumpmap: crateBumpMap
     })
   );
   grassRight.mesh.position.set(config.game.x_lane_3 +12.7, config.game.yspawn - 0.5 , 0);
-  grassRight.mesh.rotation.set(0,Math.PI/2,0);
+  grassRight.mesh.rotation.set(0,Math.PI/2,Math.PI);
   grassRight.mesh.scale.set(15,1,20);
   scene.add( grassRight.mesh );
 
