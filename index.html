@@ -7,6 +7,26 @@
 		<link href='https://fonts.googleapis.com/css?family=Black+Ops+One' rel='stylesheet' type='text/css'>
 	</head>
 	<body>
+
+		<div id="loadings">
+
+			<div id="models_loading">
+				<div>
+				  <div>Loading Models</div>
+				  <div class="progress"><div id="models_progressbar"></div></div>
+				</div>
+			</div>
+	
+			<div id="sounds_loading">
+				<div>
+				  <div>Loading Sounds</div>
+				  <div class="progress"><div id="sounds_progressbar"></div></div>
+				</div>
+			</div>	
+			
+		</div>
+
+
 		<div id="main_menu" hidden>
 			<img src="assets/images/sapienza_logo.png"></img>
 		</div>
@@ -32,7 +52,7 @@
 				<h3>Esc/SpaceBar : Pause/Play</h3>
 			</div>
 		</div>
-		<div id="settings">
+		<div id="settings" hidden>
 			<div>
 				<h2><b>Difficoltà:<b></h2>
 				<h2 id="difficulty">Medium</h2><br>

@@ -413,6 +413,9 @@ function loadModels(){
   const modelsLoadMngr = new THREE.LoadingManager();
   modelsLoadMngr.onLoad = () => {
     modelsLoaded = true;
+
+    document.querySelector('#models_loading').hidden = true;
+
     if (modelsLoaded && soundsLoaded){
       init();
     }
@@ -517,6 +520,7 @@ function init(){
 
   document.getElementById("main_menu").hidden = false;
   document.getElementById("authors").hidden = false;
+  document.getElementById("settings").hidden = false;
   setSpawnRefuel();
   initFerrari();
   initvehicles();
@@ -1231,6 +1235,8 @@ function loadSounds() {
 	soundsLoaderMngr.onLoad = () => {
 
 		soundsLoaded = true;
+
+    document.querySelector('#sounds_loading').hidden = true;
 
 		// hide the loading bar
 		//document.querySelector('#sounds_loading').hidden = true;
