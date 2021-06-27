@@ -20,4 +20,5 @@ This is game in which you're the driver of a ferrari. Try to not hit other wehic
 
 ## HOW TO PLAY THE GAME
 You can directly play the game by clicking on the following link
+
 [PLAY](https://sapienzainteractivegraphicscourse.github.io/final-project-coconuts/)
