@@ -43,7 +43,7 @@ var config = {
     showFog: true,
     isPlaying: false,
     isStarted: false,
-    hitbox_visible: false,
+    hitbox_visible: true,
     soundsOn: true,
     initialPositionz: 20,
     soundAfterPlay: false,
@@ -422,6 +422,7 @@ function loadModels(){
   };
   modelsLoadMngr.onProgress = (url, itemsLoaded, itemsTotal) => {
     console.log("Loading the models... ", itemsLoaded/itemsTotal*100, "%");
+    document.getElementById("get_models_progress").innerHTML = `${itemsLoaded / itemsTotal * 100 | 0}%`;
   };
   {
 		const gltfLoader = new GLTFLoader(modelsLoadMngr);
@@ -1246,9 +1247,9 @@ function loadSounds() {
 		}
 	};
 
-	const modelsProgressBar = document.querySelector('#sounds_progressbar');
 	soundsLoaderMngr.onProgress = (url, itemsLoaded, itemsTotal) => {
 		console.log("Loading sounds... ", itemsLoaded / itemsTotal * 100, '%');
+    document.getElementById("get_sounds_progress").innerHTML = `${itemsLoaded / itemsTotal * 100 | 0}%`;
 	};
 	{
 		const audioLoader = new THREE.AudioLoader(soundsLoaderMngr);

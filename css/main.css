@@ -8,12 +8,13 @@ canvas {
 }
 
   #loading {
-    position: relative;
-    left: 0;
-    top: 100;
+    background-color: #FF0000;
+    position: absolute;
+    left: 500em;
+    top: 200;
     width: 100%;
     height: 100%;
-    display: flex;
+    display:flex;
     align-items: center;
     justify-content: center;
     font-family: 'Montserrat';
@@ -27,95 +28,84 @@ canvas {
     padding: 2px;
   }
   
-  .progress {
-    width: 50vw;
-    border: 1px solid black;
+  .box
+  {
+    background:#fff;
+    width:300px;
+    height:400px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    flex-direction:column;
+    box-shadow:0 30px 60px rgba(0,0,0,.4);
+    transition: transform .2s;
   }
-
-  #models_progressbar {
-    width: 0;
-    transition: width ease-out .5s;
-    height: 1em;
-    background-color: #888;
-    background-image: linear-gradient(
-      -45deg, 
-      rgba(255, 255, 255, .5) 25%, 
-      transparent 25%, 
-      transparent 50%, 
-      rgba(255, 255, 255, .5) 50%, 
-      rgba(255, 255, 255, .5) 75%, 
-      transparent 75%, 
-      transparent
-    );
-    background-size: 50px 50px;
-    animation: progressanim 2s linear infinite;
+  /* .box:hover
+  {
+   transform:scale(1.2);
+  } */
+  .box .percent
+  {
+    width:150px;
+    height:150px;
+    position:relative;
   }
-
-  #sounds_progressbar {
-    width: 0;
-    transition: width ease-out .5s;
-    height: 1em;
-    background-color: #888;
-    background-image: linear-gradient(
-      -45deg, 
-      rgba(255, 255, 255, .5) 25%, 
-      transparent 25%, 
-      transparent 50%, 
-      rgba(255, 255, 255, .5) 50%, 
-      rgba(255, 255, 255, .5) 75%, 
-      transparent 75%, 
-      transparent
-    );
-    background-size: 50px 50px;
-    animation: progressanim 2s linear infinite;
+  .box .percent svg
+  {
+    width:150px;
+    height:150px;
+    position:relative;
   }
-   
-  @keyframes progressanim {
-    0% {
-      background-position: 50px 50px;
-    }
-    100% {
-      background-position: 0 0;
-    }
+  .box .percent svg circle
+  {
+    width:150px;
+    height:150px;
+    fill:none;
+    stroke-width:10;
+    stroke:#000;
+    transform:translate(5px,5px);
+    stroke-dasharray:440;
+    stroke-dashoffset:440;
+    stroke-linecap:round;
   }
-
-  #info {
-    position: absolute;
-    left: 4em;
-    top: 4em;
-    background: rgba(0,0,0,.8);
-    padding: .5em;
-    color: white;
-    font-family: monospace;
+  .box .percent svg circle:nth-child(1)
+  {
+    stroke-dashoffset:0;
+    stroke:#f3f3f3;
   }
-
-  #game_pause {
-    position: absolute;
-    top: 10vh;
-    left: 10vw;
-
-    margin: auto;
-    width: 50%;
+  .box .percent svg circle:nth-child(2)
+  {
+    stroke-dashoffset:calc(440 - (440 * 87) / 100);
+    stroke:#03a9f4;
   }
-
-  #game_pause h1 {
-    font-family: 'Montserrat';
-    font-size: 3.5em;
-    color: #212121;
-    /*width: auto;*/
-    line-height: .8em;
-    /*border: 5px solid black;*/
-    /*padding: .2em; */
-    /*-webkit-text-stroke: 3px black; */
+  .box .percent .num
+  {
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:absolute;
+    color:#111;
   }
-
-  #game_pause p {
-    font-family: 'Montserrat';
-    font-size: 1em;
-    color: #212121;
-    /*-webkit-text-stroke: 1px black; */
+  .box .percent .num h2
+  {
+    font-size:48px;
   }
-
+  .box .percent .num h2 span
+  {
+    font-size:24px;
+  }
+  .box .text
+  {
+    color:#999;
+    font-weight:700;
+    letter-spacing:1px;
+  }
+  
   #main_menu {
     position: absolute;
     top: 6vh;
