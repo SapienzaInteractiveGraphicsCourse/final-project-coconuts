@@ -233,6 +233,15 @@ function initGrassRight(){
   crateTexture = texLoader.load("./assets/environment/sand1_diffuse.jpg");
   crateBumpMap = texLoader.load("./assets/environment/sand1_bump.jpg");
   crateNormalMap = texLoader.load("./assets/environment/sand1_normal.jpg");
+  crateTexture.wrapS = THREE.RepeatWrapping;
+  crateTexture.wrapT = THREE.RepeatWrapping;
+  crateTexture.repeat.set( 150, 1);
+  crateBumpMap.wrapS = THREE.RepeatWrapping;
+  crateBumpMap.wrapT = THREE.RepeatWrapping;
+  crateBumpMap.repeat.set( 150, 2 );
+  crateNormalMap.wrapS = THREE.RepeatWrapping;
+  crateNormalMap.wrapT = THREE.RepeatWrapping;
+  crateNormalMap.repeat.set( 150, 2 );
  
   grassRight.mesh = new THREE.Mesh(
     new THREE.BoxGeometry(1,1,1),
@@ -247,7 +256,7 @@ function initGrassRight(){
   );
   grassRight.mesh.position.set(config.game.x_lane_3 +12.7, config.game.yspawn - 0.5 , 0);
   grassRight.mesh.rotation.set(0,Math.PI/2,Math.PI);
-  grassRight.mesh.scale.set(15,1,20);
+  grassRight.mesh.scale.set(15000,1,20);
   scene.add( grassRight.mesh );
 
 
@@ -507,8 +516,8 @@ function init(){
   const color = 0xFFFFFF;
   const intensity = 5;
   const light = new THREE.DirectionalLight(color, intensity);
-  light.position.set(0, 20, 0);
-  light.target.position.set(-10, 0, 0);
+  light.position.set(0, 20, 100);
+  light.target.position.set(0, 0, 0);
   scene.add(light);
   scene.add(light.target);
   const helper = new THREE.DirectionalLightHelper(light);
