@@ -43,7 +43,7 @@ var config = {
     showFog: true,
     isPlaying: false,
     isStarted: false,
-    hitbox_visible: true,
+    hitbox_visible: false,
     soundsOn: true,
     initialPositionz: 20,
     soundAfterPlay: false,
@@ -461,7 +461,7 @@ function init(){
   document.body.appendChild( renderer.domElement );
 
   //declaring control variable
-  const controls = new OrbitControls(camera, renderer.domElement);
+  //const controls = new OrbitControls(camera, renderer.domElement);
 
   clock = new THREE.Clock(false);
   
@@ -483,9 +483,7 @@ function init(){
   light.position.set(30, 20, 100);
   light.target.position.set(0, 0, 0);
   scene.add(light);
-  scene.add(light.target);
-  const helper = new THREE.DirectionalLightHelper(light);
-  scene.add(helper); 
+  
 
   document.getElementById("main_menu").hidden = false;
   document.getElementById("authors").hidden = false;
@@ -992,7 +990,7 @@ function movePlants(){
 	if (config.utils.isPlaying){
     var delta = { z: 0 };
     objectsTween = new TWEEN.Tween(delta)
-    .to({ z: 0.3 },config.game.velocity) 
+    .to({ z: 0.1 },config.game.velocity) 
     .easing(TWEEN.Easing.Linear.None)
     .onUpdate( 
           () => {

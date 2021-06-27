@@ -41,10 +41,7 @@ canvas {
     box-shadow:0 30px 60px rgba(0,0,0,.4);
     transition: transform .2s;
   }
-  /* .box:hover
-  {
-   transform:scale(1.2);
-  } */
+
   .box .percent
   {
     width:150px;
@@ -110,8 +107,7 @@ canvas {
     position: absolute;
     top: 6vh;
     left: 2vw;
-   
-    /*border: 5px solid black; */
+
     margin: auto;
     width: 50%;
   }
@@ -302,9 +298,9 @@ canvas {
 
   .Row {
     display: table;
-    width: 100%; /*Optional*/
-    table-layout: fixed; /*Optional*/
-    border-spacing: 10px; /*Optional*/
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 10px;
   }
   .Column {
       display: table-cell;
