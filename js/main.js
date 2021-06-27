@@ -230,18 +230,8 @@ function initGrassRight(){
   const texLoader = new THREE.TextureLoader();
   const geometry = new THREE.BoxGeometry(1,1,1);
 
-  crateTexture = texLoader.load("./assets/environment/sand1_diffuse.jpg");
-  crateBumpMap = texLoader.load("./assets/environment/sand1_bump.jpg");
-  crateNormalMap = texLoader.load("./assets/environment/sand1_normal.jpg");
-  crateTexture.wrapS = THREE.RepeatWrapping;
-  crateTexture.wrapT = THREE.RepeatWrapping;
-  crateTexture.repeat.set( 150, 1);
-  crateBumpMap.wrapS = THREE.RepeatWrapping;
-  crateBumpMap.wrapT = THREE.RepeatWrapping;
-  crateBumpMap.repeat.set( 150, 2 );
-  crateNormalMap.wrapS = THREE.RepeatWrapping;
-  crateNormalMap.wrapT = THREE.RepeatWrapping;
-  crateNormalMap.repeat.set( 150, 2 );
+  crateTexture = texLoader.load("./assets/environment/sand.jpg");
+  crateNormalMap = texLoader.load("./assets/environment/sand_bump.jpg")
  
   grassRight.mesh = new THREE.Mesh(
     new THREE.BoxGeometry(1,1,1),
@@ -251,7 +241,7 @@ function initGrassRight(){
     specular   :  new THREE.Color("rgb(255,255,255)"),
     shininess  :  20,
       map: crateTexture,
-      bumpmap: crateBumpMap
+      bumpmap: crateNormalMap
     })
   );
   grassRight.mesh.position.set(config.game.x_lane_3 +12.7, config.game.yspawn - 0.5 , 0);
@@ -516,7 +506,7 @@ function init(){
   const color = 0xFFFFFF;
   const intensity = 5;
   const light = new THREE.DirectionalLight(color, intensity);
-  light.position.set(0, 20, 100);
+  light.position.set(100, 20, 100);
   light.target.position.set(0, 0, 0);
   scene.add(light);
   scene.add(light.target);
