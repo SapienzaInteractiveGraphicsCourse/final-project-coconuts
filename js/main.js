@@ -81,6 +81,7 @@ var grassLeft= {
   mesh: new THREE.Object3D()
 }
 
+
 const hitBox = new THREE.BoxGeometry(1, 1, 1);
 const hitBox_material = new THREE.MeshStandardMaterial({
   color: 0xffffff,
@@ -222,24 +223,28 @@ function initRoad(){
   scene.add( road.mesh );
 }
 
+var crateTexture, crateBumpMap, crateNormalMap;
+
 function initGrassRight(){
+  
   const texLoader = new THREE.TextureLoader();
   const geometry = new THREE.BoxGeometry(1,1,1);
 
-  var texture = texLoader.load("./assets/environment/sand.jpg");
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set( 150, 5 );
-
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-  });
-
-  grassRight.mesh = new THREE.Mesh( geometry, material );
+  crateTexture = texLoader.load("./assets/environment/sand1_diffuse.jpg");
+  crateBumpMap = texLoader.load("./assets/environment/sand1_bump.jpg");
+  crateNormalMap = texLoader.load("./assets/environment/sand1_normal.jpg");
+ 
+  grassRight.mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      map: crateTexture,
+      bumpmap: crateBumpMap
+    })
+  );
   grassRight.mesh.position.set(config.game.x_lane_3 +12.7, config.game.yspawn - 0.5 , 0);
   grassRight.mesh.rotation.set(0,Math.PI/2,0);
-  grassRight.mesh.scale.set(15000,1,20);
-  grassRight.mesh.receiveShadow = true;
+  grassRight.mesh.scale.set(15,1,20);
   scene.add( grassRight.mesh );
 
 
@@ -583,6 +588,8 @@ function resumePlaying(){
   animateFuel();
   moveFerrari();
 }
+
+
 
 function gameOver(){
   config.utils.isPlaying = false;
